@@ -166,16 +166,6 @@ export default function InvoicePage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this invoice?")) return;
-    try {
-      await api.delete(`/invoices/${id}`);
-      fetchInvoices();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete");
-    }
-  };
-
   const downloadPDF = (inv) => {
     const doc = new jsPDF();
     const pageW = doc.internal.pageSize.getWidth();
@@ -515,11 +505,6 @@ export default function InvoicePage() {
                   <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
                     PDF
                   </th>
-                  {isSuperAdmin && (
-                    <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
-                      Actions
-                    </th>
-                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -654,29 +639,6 @@ export default function InvoicePage() {
                         PDF
                       </button>
                     </td>
-                    {isSuperAdmin && (
-                      <td className="px-5 py-4 text-center">
-                        <button
-                          onClick={() => handleDelete(inv.id)}
-                          className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 px-2.5 py-1 rounded-lg transition-all"
-                        >
-                          <svg
-                            className="w-3 h-3"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth={2.5}
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                            />
-                          </svg>
-                          Delete
-                        </button>
-                      </td>
-                    )}
                   </tr>
                 ))}
               </tbody>
