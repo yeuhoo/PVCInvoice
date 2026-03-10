@@ -28,6 +28,13 @@ export default function InvoicePage() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
+
+  const [pdfPreview, setPdfPreview] = useState({ url: null, filename: "" });
+
+  const closePdfPreview = () => {
+    if (pdfPreview.url) URL.revokeObjectURL(pdfPreview.url);
+    setPdfPreview({ url: null, filename: "" });
+  };
   const [formError, setFormError] = useState("");
 
   const [editingId, setEditingId] = useState(null);
@@ -298,7 +305,9 @@ export default function InvoicePage() {
       { align: "center" },
     );
 
-    doc.save(`Invoice-${inv.invoiceNumber}.pdf`);
+    const blob = doc.output("blob");
+    const url = URL.createObjectURL(blob);
+    setPdfPreview({ url, filename: `Invoice-${inv.invoiceNumber}.pdf` });
   };
 
   const fmt = (val) =>
@@ -633,10 +642,10 @@ export default function InvoicePage() {
                           <path
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                            d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z M15 12a3 3 0 11-6 0 3 3 0 016 0z"
                           />
                         </svg>
-                        PDF
+                        Preview
                       </button>
                     </td>
                   </tr>
@@ -957,6 +966,80 @@ export default function InvoicePage() {
               </form>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* PDF Preview Modal */}
+      {pdfPreview.url && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex flex-col z-50">
+          {/* Toolbar */}
+          <div className="flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-700 flex-shrink-0">
+            <div className="flex items-center gap-3">
+              <svg
+                className="w-5 h-5 text-red-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"
+                />
+              </svg>
+              <span className="text-sm font-medium text-slate-200">
+                {pdfPreview.filename}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href={pdfPreview.url}
+                download={pdfPreview.filename}
+                className="inline-flex items-center gap-1.5 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 px-4 py-1.5 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+                  />
+                </svg>
+                Download
+              </a>
+              <button
+                onClick={closePdfPreview}
+                className="inline-flex items-center gap-1 text-sm text-slate-400 hover:text-white bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Close
+              </button>
+            </div>
+          </div>
+          {/* PDF iframe */}
+          <iframe
+            src={pdfPreview.url}
+            className="flex-1 w-full border-0"
+            title="Invoice Preview"
+          />
         </div>
       )}
     </DashboardLayout>
