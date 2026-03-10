@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int             @id @default(autoincrement())
+  name         String
+  email        String          @unique
+  passwordHash String
+  role         Role            @default(ADMIN)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  invoices     Invoice[]
+  records      InvoiceRecord[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+}
+
+model Client {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+}
+
+model Broker {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  createdAt DateTime  @default(now())
+  invoices  Invoice[]
+}
+
+model Invoice {
+  id            Int            @id @default(autoincrement())
+  invoiceNumber String         @unique
+  companyCode   String         @unique
+  clientId      Int
+  client        Client         @relation(fields: [clientId], references: [id])
+  brokerId      Int?
+  broker        Broker?        @relation(fields: [brokerId], references: [id])
+  checkDate     DateTime?
+  payrollNumber String?
+  premium       Decimal        @default(0) @db.Decimal(12, 2)
+  claimPayment  Decimal        @default(0) @db.Decimal(12, 2)
+  noOfEmployees Int            @default(0)
+  createdById   Int
+  createdBy     User           @relation(fields: [createdById], references: [id])
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  record        InvoiceRecord?
+}
+
+model InvoiceRecord {
+  id          Int           @id @default(autoincrement())
+  invoiceId   Int           @unique
+  invoice     Invoice       @relation(fields: [invoiceId], references: [id])
+  status      InvoiceStatus @default(PENDING)
+  remarks     String?
+  createdById Int
+  createdBy   User          @relation(fields: [createdById], references: [id])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
