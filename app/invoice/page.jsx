@@ -5,7 +5,7 @@ import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const EMPTY_FORM = {
   checkDate: "",
@@ -197,12 +197,14 @@ export default function InvoicePage() {
     doc.setTextColor(71, 85, 105); // slate-600
     doc.setFontSize(9);
     doc.text(`Invoice No: ${inv.invoiceNumber}`, 14, 37);
-    doc.text(`Company Code: ${inv.companyCode}`, pageW / 2, 37, { align: "center" });
+    doc.text(`Company Code: ${inv.companyCode}`, pageW / 2, 37, {
+      align: "center",
+    });
     doc.text(
       `Generated: ${new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}`,
       pageW - 14,
       37,
-      { align: "right" }
+      { align: "right" },
     );
 
     // Details section
@@ -217,11 +219,16 @@ export default function InvoicePage() {
     const details = [
       ["Client", inv.client?.name || "—"],
       ["Broker", inv.broker?.name || "—"],
-      ["Check Date", inv.checkDate ? new Date(inv.checkDate).toLocaleDateString("en-PH") : "—"],
+      [
+        "Check Date",
+        inv.checkDate
+          ? new Date(inv.checkDate).toLocaleDateString("en-PH")
+          : "—",
+      ],
       ["Payroll Number", inv.payrollNumber || "—"],
     ];
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: detailStartY + 6,
       body: details,
       theme: "plain",
@@ -242,7 +249,7 @@ export default function InvoicePage() {
     doc.setDrawColor(226, 232, 240);
     doc.line(14, finY + 2, pageW - 14, finY + 2);
 
-    doc.autoTable({
+    autoTable(doc, {
       startY: finY + 6,
       head: [["Description", "Amount"]],
       body: [
@@ -251,7 +258,11 @@ export default function InvoicePage() {
         ["No. of Employees", inv.noOfEmployees?.toString() ?? "—"],
       ],
       theme: "striped",
-      headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontSize: 10 },
+      headStyles: {
+        fillColor: [30, 64, 175],
+        textColor: [255, 255, 255],
+        fontSize: 10,
+      },
       styles: { fontSize: 10, cellPadding: 4 },
       columnStyles: {
         0: { cellWidth: 100 },
@@ -270,7 +281,7 @@ export default function InvoicePage() {
       doc.setDrawColor(226, 232, 240);
       doc.line(14, recY + 2, pageW - 14, recY + 2);
 
-      doc.autoTable({
+      autoTable(doc, {
         startY: recY + 6,
         body: [
           ["Status", inv.record.status],
@@ -290,7 +301,12 @@ export default function InvoicePage() {
     doc.setFontSize(8);
     doc.setTextColor(148, 163, 184);
     doc.setFont("helvetica", "normal");
-    doc.text(`Invoice ${inv.invoiceNumber} — PVC Invoice Record System`, pageW / 2, footerY, { align: "center" });
+    doc.text(
+      `Invoice ${inv.invoiceNumber} — PVC Invoice Record System`,
+      pageW / 2,
+      footerY,
+      { align: "center" },
+    );
 
     doc.save(`Invoice-${inv.invoiceNumber}.pdf`);
   };
@@ -618,16 +634,26 @@ export default function InvoicePage() {
                       )}
                     </td>
                     <td className="px-5 py-4 text-center">
-                        <button
-                          onClick={() => downloadPDF(inv)}
-                          className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all"
+                      <button
+                        onClick={() => downloadPDF(inv)}
+                        className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all"
+                      >
+                        <svg
+                          className="w-3 h-3"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                          viewBox="0 0 24 24"
                         >
-                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          PDF
-                        </button>
-                      </td>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                          />
+                        </svg>
+                        PDF
+                      </button>
+                    </td>
                     {isSuperAdmin && (
                       <td className="px-5 py-4 text-center">
                         <button
