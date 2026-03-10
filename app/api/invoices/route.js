@@ -104,6 +104,16 @@ export async function POST(request) {
       include: { client: true, broker: true },
     });
 
+    // Auto-create an InvoiceRecord for this invoice (status defaults to PENDING)
+    await prisma.invoiceRecord.create({
+      data: {
+        invoiceId: invoice.id,
+        status: "PENDING",
+        remarks: null,
+        createdById: user.userId,
+      },
+    });
+
     return NextResponse.json(
       {
         ...invoice,

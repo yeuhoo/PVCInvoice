@@ -164,17 +164,22 @@ export default function InvoiceRecordPage() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
             </svg>
             <p className="text-slate-400 text-sm font-medium">No records found</p>
+            <p className="text-slate-300 text-xs">Create an invoice to generate a record automatically</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Date</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Invoice No.</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Company Code</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Client</th>
                   {isSuperAdmin && <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Broker</th>}
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Amount</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Check Date</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Payroll No.</th>
+                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Premium</th>
+                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Claim Payment</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Employees</th>
                   <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Status</th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Remarks</th>
                   <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Actions</th>
@@ -183,13 +188,17 @@ export default function InvoiceRecordPage() {
               <tbody className="divide-y divide-slate-50">
                 {displayed.map((rec) => (
                   <tr key={rec.id} className="hover:bg-blue-50/20 transition-colors group">
-                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap text-xs">{fmtDate(rec.createdAt)}</td>
                     <td className="px-5 py-4 whitespace-nowrap">
                       <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">{rec.invoice?.invoiceNumber || "—"}</span>
                     </td>
-                    <td className="px-5 py-4 text-slate-800 font-medium">{rec.invoice?.client?.name || "—"}</td>
-                    {isSuperAdmin && <td className="px-5 py-4 text-slate-600">{rec.invoice?.broker?.name || "—"}</td>}
+                    <td className="px-5 py-4 font-mono text-xs text-slate-500 whitespace-nowrap">{rec.invoice?.companyCode || "—"}</td>
+                    <td className="px-5 py-4 text-slate-800 font-medium whitespace-nowrap">{rec.invoice?.client?.name || "—"}</td>
+                    {isSuperAdmin && <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{rec.invoice?.broker?.name || "—"}</td>}
+                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap text-xs">{fmtDate(rec.invoice?.checkDate)}</td>
+                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap">{rec.invoice?.payrollNumber || <span className="text-slate-300">—</span>}</td>
                     <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">₱{fmt(rec.invoice?.premium)}</td>
+                    <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">₱{fmt(rec.invoice?.claimPayment)}</td>
+                    <td className="px-5 py-4 text-center text-slate-700">{rec.invoice?.noOfEmployees ?? "—"}</td>
 
                     <td className="px-5 py-4 text-center">
                       {editingId === rec.id ? (
@@ -265,5 +274,3 @@ export default function InvoiceRecordPage() {
     </DashboardLayout>
   );
 }
-
-
