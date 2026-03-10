@@ -8,10 +8,17 @@ import { useAuth } from "@/context/AuthContext";
 const STATUS_OPTIONS = ["PENDING", "PAID", "OVERDUE", "CANCELLED"];
 
 const STATUS_STYLES = {
-  PENDING: "bg-yellow-100 text-yellow-700",
-  PAID: "bg-green-100 text-green-700",
-  OVERDUE: "bg-red-100 text-red-700",
-  CANCELLED: "bg-slate-100 text-slate-500",
+  PENDING:   "bg-amber-50 text-amber-700 border border-amber-200",
+  PAID:      "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  OVERDUE:   "bg-red-50 text-red-600 border border-red-200",
+  CANCELLED: "bg-slate-100 text-slate-500 border border-slate-200",
+};
+
+const STATUS_DOT = {
+  PENDING:   "bg-amber-400",
+  PAID:      "bg-emerald-400",
+  OVERDUE:   "bg-red-400",
+  CANCELLED: "bg-slate-400",
 };
 
 export default function InvoiceRecordPage() {
@@ -73,205 +80,165 @@ export default function InvoiceRecordPage() {
 
   const displayed = records.filter((r) => {
     if (!searchInvoiceId) return true;
-    return r.invoice?.invoiceNumber
-      ?.toLowerCase()
-      .includes(searchInvoiceId.toLowerCase());
+    return r.invoice?.invoiceNumber?.toLowerCase().includes(searchInvoiceId.toLowerCase());
   });
+
+  const inputCls = "border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white";
 
   return (
     <DashboardLayout>
-      {/* Header */}
-      <div className="mb-6">
-        <h2 className="text-xl font-bold text-slate-900">Invoice Record</h2>
-        <p className="text-sm text-slate-500 mt-0.5">
-          View and manage invoice statuses and remarks
-        </p>
+      {/* Page header */}
+      <div className="mb-7">
+        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Invoice Records</h1>
+        <p className="text-sm text-slate-500 mt-0.5">View and update invoice statuses and remarks</p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 mb-5">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-slate-600 whitespace-nowrap">
-              Invoice No.:
-            </label>
-            <input
-              type="text"
-              value={searchInvoiceId}
-              onChange={(e) => setSearchInvoiceId(e.target.value)}
-              placeholder="Search..."
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+      {/* Filter bar */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 mb-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z" />
+          </svg>
+          <input
+            type="text"
+            value={searchInvoiceId}
+            onChange={(e) => setSearchInvoiceId(e.target.value)}
+            placeholder="Search invoice number..."
+            className={`${inputCls} w-52`}
+          />
 
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-slate-600 whitespace-nowrap">
-              Status:
-            </label>
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">All</option>
-              {STATUS_OPTIONS.map((s) => (
-                <option key={s} value={s}>
-                  {s.charAt(0) + s.slice(1).toLowerCase()}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="h-5 w-px bg-slate-200" />
+
+          <svg className="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className={inputCls}
+          >
+            <option value="">All Statuses</option>
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
+            ))}
+          </select>
 
           {(filterStatus || searchInvoiceId) && (
             <button
-              onClick={() => {
-                setFilterStatus("");
-                setSearchInvoiceId("");
-              }}
-              className="text-sm text-slate-400 hover:text-slate-700 underline"
+              onClick={() => { setFilterStatus(""); setSearchInvoiceId(""); }}
+              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
             >
-              Clear filters
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
             </button>
           )}
+
+          <span className="ml-auto text-xs text-slate-400">{displayed.length} record{displayed.length !== 1 ? "s" : ""}</span>
         </div>
       </div>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+        <div className="mb-5 flex items-center gap-2 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
+          <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+          </svg>
           {error}
         </div>
       )}
 
       {/* Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
         {loading ? (
-          <div className="p-10 text-center text-slate-400 text-sm">
-            Loading records...
+          <div className="flex flex-col items-center justify-center py-20 gap-3">
+            <svg className="w-8 h-8 text-blue-500 animate-spin" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+            </svg>
+            <span className="text-slate-400 text-sm">Loading records...</span>
           </div>
         ) : displayed.length === 0 ? (
-          <div className="p-10 text-center text-slate-400 text-sm">
-            No records found.
+          <div className="flex flex-col items-center justify-center py-20 gap-2">
+            <svg className="w-12 h-12 text-slate-200" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+            </svg>
+            <p className="text-slate-400 text-sm font-medium">No records found</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Date
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Invoice No.
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Client
-                  </th>
-                  {isSuperAdmin && (
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                      Broker
-                    </th>
-                  )}
-                  <th className="text-right px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Amount (Premium)
-                  </th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Status
-                  </th>
-                  <th className="text-left px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Remarks
-                  </th>
-                  <th className="text-center px-4 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wide">
-                    Actions
-                  </th>
+              <thead>
+                <tr className="border-b border-slate-100">
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Date</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Invoice No.</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Client</th>
+                  {isSuperAdmin && <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Broker</th>}
+                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Amount</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Status</th>
+                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Remarks</th>
+                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-50">
                 {displayed.map((rec) => (
-                  <tr
-                    key={rec.id}
-                    className="hover:bg-slate-50 transition-colors"
-                  >
-                    <td className="px-4 py-3 text-slate-600 whitespace-nowrap">
-                      {fmtDate(rec.createdAt)}
+                  <tr key={rec.id} className="hover:bg-blue-50/20 transition-colors group">
+                    <td className="px-5 py-4 text-slate-500 whitespace-nowrap text-xs">{fmtDate(rec.createdAt)}</td>
+                    <td className="px-5 py-4 whitespace-nowrap">
+                      <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">{rec.invoice?.invoiceNumber || "—"}</span>
                     </td>
-                    <td className="px-4 py-3 font-mono text-xs text-blue-700 font-semibold whitespace-nowrap">
-                      {rec.invoice?.invoiceNumber || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-slate-800">
-                      {rec.invoice?.client?.name || "—"}
-                    </td>
-                    {isSuperAdmin && (
-                      <td className="px-4 py-3 text-slate-700">
-                        {rec.invoice?.broker?.name || "—"}
-                      </td>
-                    )}
-                    <td className="px-4 py-3 text-right text-slate-800 whitespace-nowrap">
-                      ₱{fmt(rec.invoice?.premium)}
-                    </td>
+                    <td className="px-5 py-4 text-slate-800 font-medium">{rec.invoice?.client?.name || "—"}</td>
+                    {isSuperAdmin && <td className="px-5 py-4 text-slate-600">{rec.invoice?.broker?.name || "—"}</td>}
+                    <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">₱{fmt(rec.invoice?.premium)}</td>
 
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-5 py-4 text-center">
                       {editingId === rec.id ? (
                         <select
                           value={editData.status}
-                          onChange={(e) =>
-                            setEditData({ ...editData, status: e.target.value })
-                          }
-                          className="border border-slate-300 rounded px-2 py-1 text-xs"
+                          onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                          className="border border-blue-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>
-                              {s.charAt(0) + s.slice(1).toLowerCase()}
-                            </option>
+                            <option key={s} value={s}>{s.charAt(0) + s.slice(1).toLowerCase()}</option>
                           ))}
                         </select>
                       ) : (
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold ${STATUS_STYLES[rec.status] || "bg-slate-100 text-slate-500"}`}
-                        >
-                          {rec.status.charAt(0) +
-                            rec.status.slice(1).toLowerCase()}
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[rec.status] || "bg-slate-100 text-slate-500"}`}>
+                          <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[rec.status] || "bg-slate-400"}`} />
+                          {rec.status.charAt(0) + rec.status.slice(1).toLowerCase()}
                         </span>
                       )}
                     </td>
 
-                    <td className="px-4 py-3 text-slate-600 max-w-xs">
+                    <td className="px-5 py-4 max-w-xs">
                       {editingId === rec.id ? (
                         <input
                           type="text"
                           value={editData.remarks}
-                          onChange={(e) =>
-                            setEditData({
-                              ...editData,
-                              remarks: e.target.value,
-                            })
-                          }
+                          onChange={(e) => setEditData({ ...editData, remarks: e.target.value })}
                           placeholder="Add remarks..."
-                          className="w-full border border-slate-300 rounded px-2 py-1 text-xs"
+                          className="w-full border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       ) : (
-                        <span>
-                          {rec.remarks || (
-                            <span className="text-slate-300 italic">
-                              No remarks
-                            </span>
-                          )}
+                        <span className={rec.remarks ? "text-slate-700" : "text-slate-300 italic text-xs"}>
+                          {rec.remarks || "No remarks"}
                         </span>
                       )}
                     </td>
 
-                    <td className="px-4 py-3 text-center whitespace-nowrap">
+                    <td className="px-5 py-4 text-center whitespace-nowrap">
                       {editingId === rec.id ? (
                         <div className="flex items-center justify-center gap-2">
                           <button
                             onClick={() => handleSave(rec.id)}
                             disabled={saving}
-                            className="text-xs text-green-600 hover:text-green-800 font-semibold"
+                            className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
                           >
                             {saving ? "Saving..." : "Save"}
                           </button>
                           <button
                             onClick={() => setEditingId(null)}
-                            className="text-xs text-slate-400 hover:text-slate-700"
+                            className="text-xs text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
                           >
                             Cancel
                           </button>
@@ -279,8 +246,11 @@ export default function InvoiceRecordPage() {
                       ) : (
                         <button
                           onClick={() => startEdit(rec)}
-                          className="text-xs text-blue-500 hover:text-blue-700 font-medium"
+                          className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-all"
                         >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
                           Edit
                         </button>
                       )}
@@ -295,3 +265,5 @@ export default function InvoiceRecordPage() {
     </DashboardLayout>
   );
 }
+
+
