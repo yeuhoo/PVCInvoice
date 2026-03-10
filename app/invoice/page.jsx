@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 const EMPTY_FORM = {
   checkDate: "",
@@ -172,6 +174,125 @@ export default function InvoicePage() {
     } catch (err) {
       alert(err.response?.data?.message || "Failed to delete");
     }
+  };
+
+  const downloadPDF = (inv) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+
+    // Header bar
+    doc.setFillColor(30, 64, 175); // blue-800
+    doc.rect(0, 0, pageW, 28, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("INVOICE", 14, 18);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`PVC Invoice Record System`, pageW - 14, 18, { align: "right" });
+
+    // Invoice number + date strip
+    doc.setFillColor(241, 245, 249); // slate-100
+    doc.rect(0, 28, pageW, 14, "F");
+    doc.setTextColor(71, 85, 105); // slate-600
+    doc.setFontSize(9);
+    doc.text(`Invoice No: ${inv.invoiceNumber}`, 14, 37);
+    doc.text(`Company Code: ${inv.companyCode}`, pageW / 2, 37, { align: "center" });
+    doc.text(
+      `Generated: ${new Date().toLocaleDateString("en-PH", { year: "numeric", month: "long", day: "numeric" })}`,
+      pageW - 14,
+      37,
+      { align: "right" }
+    );
+
+    // Details section
+    const detailStartY = 52;
+    doc.setTextColor(15, 23, 42); // slate-950
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Invoice Details", 14, detailStartY);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, detailStartY + 2, pageW - 14, detailStartY + 2);
+
+    const details = [
+      ["Client", inv.client?.name || "—"],
+      ["Broker", inv.broker?.name || "—"],
+      ["Check Date", inv.checkDate ? new Date(inv.checkDate).toLocaleDateString("en-PH") : "—"],
+      ["Payroll Number", inv.payrollNumber || "—"],
+    ];
+
+    doc.autoTable({
+      startY: detailStartY + 6,
+      body: details,
+      theme: "plain",
+      styles: { fontSize: 10, cellPadding: 3, textColor: [15, 23, 42] },
+      columnStyles: {
+        0: { fontStyle: "bold", textColor: [100, 116, 139], cellWidth: 50 },
+        1: { cellWidth: "auto" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // Financials table
+    const finY = doc.lastAutoTable.finalY + 10;
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
+    doc.text("Financial Summary", 14, finY);
+    doc.setDrawColor(226, 232, 240);
+    doc.line(14, finY + 2, pageW - 14, finY + 2);
+
+    doc.autoTable({
+      startY: finY + 6,
+      head: [["Description", "Amount"]],
+      body: [
+        ["Premium", `\u20B1${fmt(inv.premium)}`],
+        ["Claim Payment", `\u20B1${fmt(inv.claimPayment)}`],
+        ["No. of Employees", inv.noOfEmployees?.toString() ?? "—"],
+      ],
+      theme: "striped",
+      headStyles: { fillColor: [30, 64, 175], textColor: [255, 255, 255], fontSize: 10 },
+      styles: { fontSize: 10, cellPadding: 4 },
+      columnStyles: {
+        0: { cellWidth: 100 },
+        1: { halign: "right" },
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    // Status / remarks
+    if (inv.record) {
+      const recY = doc.lastAutoTable.finalY + 10;
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(15, 23, 42);
+      doc.text("Record Status", 14, recY);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(14, recY + 2, pageW - 14, recY + 2);
+
+      doc.autoTable({
+        startY: recY + 6,
+        body: [
+          ["Status", inv.record.status],
+          ["Remarks", inv.record.remarks || "—"],
+        ],
+        theme: "plain",
+        styles: { fontSize: 10, cellPadding: 3, textColor: [15, 23, 42] },
+        columnStyles: {
+          0: { fontStyle: "bold", textColor: [100, 116, 139], cellWidth: 50 },
+        },
+        margin: { left: 14, right: 14 },
+      });
+    }
+
+    // Footer
+    const footerY = doc.internal.pageSize.getHeight() - 10;
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Invoice ${inv.invoiceNumber} — PVC Invoice Record System`, pageW / 2, footerY, { align: "center" });
+
+    doc.save(`Invoice-${inv.invoiceNumber}.pdf`);
   };
 
   const fmt = (val) =>
@@ -375,6 +496,9 @@ export default function InvoicePage() {
                   <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
                     Employees
                   </th>
+                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                    PDF
+                  </th>
                   {isSuperAdmin && (
                     <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
                       Actions
@@ -493,6 +617,17 @@ export default function InvoicePage() {
                         </div>
                       )}
                     </td>
+                    <td className="px-5 py-4 text-center">
+                        <button
+                          onClick={() => downloadPDF(inv)}
+                          className="opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-2.5 py-1 rounded-lg transition-all"
+                        >
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          PDF
+                        </button>
+                      </td>
                     {isSuperAdmin && (
                       <td className="px-5 py-4 text-center">
                         <button
