@@ -76,13 +76,15 @@ export async function POST(request) {
     const record = await prisma.invoiceRecord.create({
       data: {
         invoiceId: parseInt(invoiceId),
-        status: status || "PENDING",
+        status: status || "OPEN",
         remarks: remarks || null,
         createdById: user.userId,
+        updatedById: user.userId,
       },
       include: {
         invoice: { include: { client: true } },
         createdBy: { select: { id: true, name: true } },
+        updatedBy: { select: { id: true, name: true } },
       },
     });
 

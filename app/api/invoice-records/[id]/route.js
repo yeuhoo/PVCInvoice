@@ -23,6 +23,7 @@ export async function PATCH(request, { params }) {
     const updateData = {};
     if (body.status !== undefined) updateData.status = body.status;
     if (body.remarks !== undefined) updateData.remarks = body.remarks;
+    updateData.updatedById = user.userId; // Track who updated
 
     const updated = await prisma.invoiceRecord.update({
       where: { id: parseInt(id) },
@@ -30,6 +31,7 @@ export async function PATCH(request, { params }) {
       include: {
         invoice: { include: { client: true } },
         createdBy: { select: { id: true, name: true } },
+        updatedBy: { select: { id: true, name: true } },
       },
     });
 

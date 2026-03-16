@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "InvoiceStatus" AS ENUM ('PENDING', 'PAID', 'OVERDUE', 'CANCELLED');
+CREATE TYPE "InvoiceStatus" AS ENUM ('OPEN', 'ACH', 'Received');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -39,7 +39,6 @@ CREATE TABLE "Broker" (
 CREATE TABLE "Invoice" (
     "id" SERIAL NOT NULL,
     "invoiceNumber" TEXT NOT NULL,
-    "companyCode" TEXT NOT NULL,
     "clientId" INTEGER NOT NULL,
     "brokerId" INTEGER,
     "checkDate" TIMESTAMP(3),
@@ -58,7 +57,7 @@ CREATE TABLE "Invoice" (
 CREATE TABLE "InvoiceRecord" (
     "id" SERIAL NOT NULL,
     "invoiceId" INTEGER NOT NULL,
-    "status" "InvoiceStatus" NOT NULL DEFAULT 'PENDING',
+    "status" "InvoiceStatus" NOT NULL DEFAULT 'OPEN',
     "remarks" TEXT,
     "createdById" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -78,9 +77,6 @@ CREATE UNIQUE INDEX "Broker_name_key" ON "Broker"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Invoice_invoiceNumber_key" ON "Invoice"("invoiceNumber");
-
--- CreateIndex
-CREATE UNIQUE INDEX "Invoice_companyCode_key" ON "Invoice"("companyCode");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "InvoiceRecord_invoiceId_key" ON "InvoiceRecord"("invoiceId");

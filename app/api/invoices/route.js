@@ -3,14 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/lib/auth";
 
 function generateInvoiceNumber() {
-  const ts = Date.now().toString(36).toUpperCase();
-  const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
-  return `INV-${ts}-${rand}`;
-}
-
-function generateCompanyCode() {
-  const rand = Math.random().toString(36).substring(2, 8).toUpperCase();
-  return `CC-${rand}`;
+  // Generate 9-digit number (100000000 to 999999999)
+  return Math.floor(100000000 + Math.random() * 900000000).toString();
 }
 
 // GET /api/invoices
@@ -33,7 +27,12 @@ export async function GET(request) {
         client: true,
         broker: true,
         createdBy: { select: { id: true, name: true } },
-        record: true,
+        record: {
+          include: {
+            createdBy: { select: { id: true, name: true } },
+            updatedBy: { select: { id: true, name: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     });
@@ -75,23 +74,20 @@ export async function POST(request) {
       );
     }
 
-    let invoiceNumber, companyCode;
+    let invoiceNumber;
     let unique = false;
 
     while (!unique) {
       invoiceNumber = generateInvoiceNumber();
-      companyCode = generateCompanyCode();
-      const [existingInv, existingCC] = await Promise.all([
-        prisma.invoice.findUnique({ where: { invoiceNumber } }),
-        prisma.invoice.findUnique({ where: { companyCode } }),
-      ]);
-      if (!existingInv && !existingCC) unique = true;
+      const existingInv = await prisma.invoice.findUnique({
+        where: { invoiceNumber },
+      });
+      if (!existingInv) unique = true;
     }
 
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
-        companyCode,
         clientId: parseInt(clientId),
         brokerId: brokerId ? parseInt(brokerId) : null,
         checkDate: checkDate ? new Date(checkDate) : null,
@@ -104,13 +100,14 @@ export async function POST(request) {
       include: { client: true, broker: true },
     });
 
-    // Auto-create an InvoiceRecord for this invoice (status defaults to PENDING)
+    // Auto-create an InvoiceRecord for this invoice (status defaults to OPEN)
     await prisma.invoiceRecord.create({
       data: {
         invoiceId: invoice.id,
-        status: "PENDING",
+        status: "OPEN",
         remarks: null,
         createdById: user.userId,
+        updatedById: user.userId,
       },
     });
 

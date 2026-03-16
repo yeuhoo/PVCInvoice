@@ -9,15 +9,16 @@ datasource db {
 }
 
 model User {
-  id           Int             @id @default(autoincrement())
-  name         String
-  email        String          @unique
-  passwordHash String
-  role         Role            @default(ADMIN)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
-  invoices     Invoice[]
-  records      InvoiceRecord[]
+  id                    Int             @id @default(autoincrement())
+  name                  String
+  email                 String          @unique
+  passwordHash          String
+  role                  Role            @default(ADMIN)
+  createdAt             DateTime        @default(now())
+  updatedAt             DateTime        @updatedAt
+  invoices              Invoice[]
+  recordsCreated        InvoiceRecord[] @relation("InvoiceRecordCreatedBy")
+  recordsUpdated        InvoiceRecord[] @relation("InvoiceRecordUpdatedBy")
 }
 
 enum Role {
@@ -42,7 +43,6 @@ model Broker {
 model Invoice {
   id            Int            @id @default(autoincrement())
   invoiceNumber String         @unique
-  companyCode   String         @unique
   clientId      Int
   client        Client         @relation(fields: [clientId], references: [id])
   brokerId      Int?
@@ -63,17 +63,18 @@ model InvoiceRecord {
   id          Int           @id @default(autoincrement())
   invoiceId   Int           @unique
   invoice     Invoice       @relation(fields: [invoiceId], references: [id])
-  status      InvoiceStatus @default(PENDING)
+  status      InvoiceStatus @default(OPEN)
   remarks     String?
   createdById Int
-  createdBy   User          @relation(fields: [createdById], references: [id])
+  createdBy   User          @relation(fields: [createdById], references: [id], name: "InvoiceRecordCreatedBy")
+  updatedById Int?
+  updatedBy   User?         @relation(fields: [updatedById], references: [id], name: "InvoiceRecordUpdatedBy")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 }
 
 enum InvoiceStatus {
-  PENDING
-  PAID
-  OVERDUE
-  CANCELLED
+  OPEN
+  ACH
+  Received
 }

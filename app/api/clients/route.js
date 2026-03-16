@@ -16,12 +16,10 @@ export async function GET(request) {
   }
 }
 
-// POST /api/clients - super admin only
+// POST /api/clients - all authenticated users can create clients
 export async function POST(request) {
   const { user, error } = verifyToken(request);
   if (error) return error;
-  const roleError = requireRole(user, "SUPER_ADMIN");
-  if (roleError) return roleError;
 
   try {
     const { name } = await request.json();
