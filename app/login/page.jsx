@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
@@ -13,25 +13,29 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      const res = await api.post("/auth/login", form);
-      login(res.data.user, res.data.token);
-      router.replace("/invoice");
-    } catch (err) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError("");
+      setLoading(true);
+      try {
+        const res = await api.post("/auth/login", form);
+        login(res.data.user, res.data.token);
+        router.replace("/invoice");
+      } catch (err) {
+        setError(
+          err.response?.data?.message || "Login failed. Please try again.",
+        );
+      } finally {
+        setLoading(false);
+      }
+    },
+    [login, router],
+  );
 
   return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">

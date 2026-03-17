@@ -11,7 +11,11 @@ export async function GET(request) {
 
   try {
     const brokers = await prisma.broker.findMany({ orderBy: { name: "asc" } });
-    return NextResponse.json(brokers);
+    return NextResponse.json(brokers, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

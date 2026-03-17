@@ -9,7 +9,11 @@ export async function GET(request) {
 
   try {
     const clients = await prisma.client.findMany({ orderBy: { name: "asc" } });
-    return NextResponse.json(clients);
+    return NextResponse.json(clients, {
+      headers: {
+        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
+      },
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -39,85 +39,109 @@ export default function InvoicePage() {
     }
   }, [isSuperAdmin]);
 
-  const handleFormChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const handleFormChange = useCallback((e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  }, []);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
+  const closeModal = useCallback(() => {
+    setShowModal(false);
     setFormError("");
-    setSubmitting(true);
-    try {
-      // Validate client name
-      if (!form.clientName || !form.clientName.trim()) {
-        setFormError("Client name is required");
-        setSubmitting(false);
-        return;
-      }
+    setForm(EMPTY_FORM);
+    setPaymentType("checkDate");
+  }, []);
 
-      // Find or create client
-      let clientId;
-      const existingClient = clients.find(
-        (c) => c.name.toLowerCase() === form.clientName.trim().toLowerCase(),
-      );
-      if (existingClient) {
-        clientId = existingClient.id;
-      } else {
-        // Create new client
-        const clientRes = await api.post("/clients", {
-          name: form.clientName.trim(),
-        });
-        clientId = clientRes.data.id;
-        // Refresh clients list
-        const updatedClients = await api.get("/clients");
-        setClients(updatedClients.data);
-      }
-
-      // Find or create broker (if provided and super admin)
-      let brokerId = undefined;
-      if (isSuperAdmin && form.brokerName && form.brokerName.trim()) {
-        const existingBroker = brokers.find(
-          (b) => b.name.toLowerCase() === form.brokerName.trim().toLowerCase(),
-        );
-        if (existingBroker) {
-          brokerId = existingBroker.id;
-        } else {
-          // Create new broker
-          const brokerRes = await api.post("/brokers", {
-            name: form.brokerName.trim(),
-          });
-          brokerId = brokerRes.data.id;
-          // Refresh brokers list
-          const updatedBrokers = await api.get("/brokers");
-          setBrokers(updatedBrokers.data);
-        }
-      }
-
-      // Create the invoice (invoice record is auto-created by the backend)
-      await api.post("/invoices", {
-        clientId,
-        brokerId,
-        checkDate: form.checkDate || undefined,
-        payrollNumber: form.payrollNumber || undefined,
-        premium: form.premium || "0",
-        claimPayment: form.claimPayment || "0",
-        noOfEmployees: form.noOfEmployees || 0,
-      });
-
-      setShowModal(false);
-      setForm(EMPTY_FORM);
-      setPaymentType("checkDate");
-      alert("Invoice created successfully!");
-    } catch (err) {
-      console.error("Invoice creation error:", err);
-      const errorMsg =
-        err.response?.data?.message ||
-        err.message ||
-        "Failed to create invoice";
-      setFormError(errorMsg);
-    } finally {
-      setSubmitting(false);
+  const handlePaymentTypeChange = useCallback((value) => {
+    setPaymentType(value);
+    if (value === "checkDate") {
+      setForm((prev) => ({ ...prev, payrollNumber: "" }));
+    } else {
+      setForm((prev) => ({ ...prev, checkDate: "" }));
     }
-  };
+  }, []);
+
+  const handleCreate = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setFormError("");
+      setSubmitting(true);
+      try {
+        // Validate client name
+        if (!form.clientName || !form.clientName.trim()) {
+          setFormError("Client name is required");
+          setSubmitting(false);
+          return;
+        }
+
+        // Find or create client
+        let clientId;
+        const existingClient = clients.find(
+          (c) => c.name.toLowerCase() === form.clientName.trim().toLowerCase(),
+        );
+        if (existingClient) {
+          clientId = existingClient.id;
+        } else {
+          // Create new client
+          const clientRes = await api.post("/clients", {
+            name: form.clientName.trim(),
+          });
+          clientId = clientRes.data.id;
+          // Refresh clients list
+          const updatedClients = await api.get("/clients");
+          setClients(updatedClients.data);
+        }
+
+        // Find or create broker (if provided and super admin)
+        let brokerId = undefined;
+        if (isSuperAdmin && form.brokerName && form.brokerName.trim()) {
+          const existingBroker = brokers.find(
+            (b) =>
+              b.name.toLowerCase() === form.brokerName.trim().toLowerCase(),
+          );
+          if (existingBroker) {
+            brokerId = existingBroker.id;
+          } else {
+            // Create new broker
+            const brokerRes = await api.post("/brokers", {
+              name: form.brokerName.trim(),
+            });
+            brokerId = brokerRes.data.id;
+            // Refresh brokers list
+            const updatedBrokers = await api.get("/brokers");
+            setBrokers(updatedBrokers.data);
+          }
+        }
+
+        // Create the invoice (invoice record is auto-created by the backend)
+        await api.post("/invoices", {
+          clientId,
+          brokerId,
+          checkDate: form.checkDate || undefined,
+          payrollNumber: form.payrollNumber || undefined,
+          premium: form.premium || "0",
+          claimPayment: form.claimPayment || "0",
+          noOfEmployees: form.noOfEmployees || 0,
+        });
+
+        setShowModal(false);
+        setForm(EMPTY_FORM);
+        setPaymentType("checkDate");
+        alert("Invoice created successfully!");
+      } catch (err) {
+        console.error("Invoice creation error:", err);
+        const errorMsg =
+          err.response?.data?.message ||
+          err.message ||
+          "Failed to create invoice";
+        setFormError(errorMsg);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [clients, brokers, form, isSuperAdmin],
+  );
+
+  const clientOptions = useMemo(() => clients, [clients]);
+  const brokerOptions = useMemo(() => brokers, [brokers]);
 
   return (
     <DashboardLayout>
@@ -150,12 +174,7 @@ export default function InvoicePage() {
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-lg font-bold text-slate-900">New Invoice</h3>
               <button
-                onClick={() => {
-                  setShowModal(false);
-                  setFormError("");
-                  setForm(EMPTY_FORM);
-                  setPaymentType("checkDate");
-                }}
+                onClick={closeModal}
                 className="text-slate-400 hover:text-slate-700 text-xl"
               >
                 ×
@@ -186,7 +205,7 @@ export default function InvoicePage() {
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                   <datalist id="clients-list">
-                    {clients.map((c) => (
+                    {clientOptions.map((c) => (
                       <option key={c.id} value={c.name} />
                     ))}
                   </datalist>
@@ -208,7 +227,7 @@ export default function InvoicePage() {
                       className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <datalist id="brokers-list">
-                      {brokers.map((b) => (
+                      {brokerOptions.map((b) => (
                         <option key={b.id} value={b.name} />
                       ))}
                     </datalist>
@@ -229,10 +248,9 @@ export default function InvoicePage() {
                         name="paymentType"
                         value="checkDate"
                         checked={paymentType === "checkDate"}
-                        onChange={(e) => {
-                          setPaymentType(e.target.value);
-                          setForm({ ...form, payrollNumber: "" });
-                        }}
+                        onChange={(e) =>
+                          handlePaymentTypeChange(e.target.value)
+                        }
                         className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
                       />
                       <span className="text-sm text-slate-700">Check Date</span>
@@ -244,10 +262,9 @@ export default function InvoicePage() {
                         name="paymentType"
                         value="payrollNumber"
                         checked={paymentType === "payrollNumber"}
-                        onChange={(e) => {
-                          setPaymentType(e.target.value);
-                          setForm({ ...form, checkDate: "" });
-                        }}
+                        onChange={(e) =>
+                          handlePaymentTypeChange(e.target.value)
+                        }
                         className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
                       />
                       <span className="text-sm text-slate-700">
@@ -335,12 +352,7 @@ export default function InvoicePage() {
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setShowModal(false);
-                    setFormError("");
-                    setForm(EMPTY_FORM);
-                    setPaymentType("checkDate");
-                  }}
+                  onClick={closeModal}
                   className="flex-1 border border-slate-300 text-slate-700 text-sm font-medium py-2.5 rounded-lg hover:bg-slate-50 transition-colors"
                 >
                   Cancel
