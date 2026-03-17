@@ -8,15 +8,18 @@ import { useAuth } from "@/context/AuthContext";
 const STATUS_OPTIONS = ["Weekly", "Biweekly", "Monthly"];
 
 const STATUS_STYLES = {
-  Weekly: "bg-blue-50 text-blue-700 border border-blue-200",
-  Biweekly: "bg-purple-50 text-purple-700 border border-purple-200",
-  Monthly: "bg-green-50 text-green-700 border border-green-200",
+  Weekly:
+    "bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-200",
+  Biweekly:
+    "bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-sm shadow-purple-200",
+  Monthly:
+    "bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-sm shadow-emerald-200",
 };
 
 const STATUS_DOT = {
-  Weekly: "bg-blue-400",
-  Biweekly: "bg-purple-400",
-  Monthly: "bg-green-400",
+  Weekly: "bg-blue-300",
+  Biweekly: "bg-purple-300",
+  Monthly: "bg-emerald-300",
 };
 
 const PAYMENT_STATUS_OPTIONS = [
@@ -41,22 +44,27 @@ const PAYMENT_STATUS_OPTIONS = [
 ];
 
 const PAYMENT_STATUS_STYLES = {
-  ReceivedPayment: "bg-green-50 text-green-700 border border-green-200",
-  InvoiceReady: "bg-blue-50 text-blue-700 border border-blue-200",
-  BilledAlready: "bg-purple-50 text-purple-700 border border-purple-200",
-  InvoiceSent: "bg-cyan-50 text-cyan-700 border border-cyan-200",
-  InitialBilling: "bg-yellow-50 text-yellow-700 border border-yellow-200",
-  SampleOnly: "bg-gray-50 text-gray-700 border border-gray-200",
-  Cancel: "bg-red-50 text-red-700 border border-red-200",
-  ACH: "bg-indigo-50 text-indigo-700 border border-indigo-200",
-  CancelAndIssueNew: "bg-orange-50 text-orange-700 border border-orange-200",
-  PleaseBill: "bg-pink-50 text-pink-700 border border-pink-200",
-  ACHReturn: "bg-rose-50 text-rose-700 border border-rose-200",
+  ReceivedPayment:
+    "bg-emerald-100 text-emerald-800 border border-emerald-300 shadow-sm",
+  InvoiceReady: "bg-sky-100 text-sky-800 border border-sky-300 shadow-sm",
+  BilledAlready:
+    "bg-purple-100 text-purple-800 border border-purple-300 shadow-sm",
+  InvoiceSent: "bg-cyan-100 text-cyan-800 border border-cyan-300 shadow-sm",
+  InitialBilling:
+    "bg-amber-100 text-amber-800 border border-amber-300 shadow-sm",
+  SampleOnly: "bg-gray-100 text-gray-800 border border-gray-300 shadow-sm",
+  Cancel: "bg-red-100 text-red-800 border border-red-300 shadow-sm",
+  ACH: "bg-indigo-100 text-indigo-800 border border-indigo-300 shadow-sm",
+  CancelAndIssueNew:
+    "bg-orange-100 text-orange-800 border border-orange-300 shadow-sm",
+  PleaseBill: "bg-pink-100 text-pink-800 border border-pink-300 shadow-sm",
+  ACHReturn: "bg-rose-100 text-rose-800 border border-rose-300 shadow-sm",
   BilledNeedsMonthlyStatement:
-    "bg-violet-50 text-violet-700 border border-violet-200",
-  BilledButDidntCharge: "bg-amber-50 text-amber-700 border border-amber-200",
-  FCACH: "bg-teal-50 text-teal-700 border border-teal-200",
-  CreditCard: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+    "bg-violet-100 text-violet-800 border border-violet-300 shadow-sm",
+  BilledButDidntCharge:
+    "bg-yellow-100 text-yellow-800 border border-yellow-300 shadow-sm",
+  FCACH: "bg-teal-100 text-teal-800 border border-teal-300 shadow-sm",
+  CreditCard: "bg-lime-100 text-lime-800 border border-lime-300 shadow-sm",
 };
 
 export default function InvoiceRecordPage() {
@@ -161,216 +169,427 @@ export default function InvoiceRecordPage() {
     return matchSearch && matchStatus;
   });
 
-  const inputCls =
-    "border border-slate-200 rounded-xl px-3 py-2 text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white";
+  // Calculate stats
+  const stats = {
+    total: displayed.length,
+    weekly: displayed.filter((inv) => inv.record?.status === "Weekly").length,
+    biweekly: displayed.filter((inv) => inv.record?.status === "Biweekly")
+      .length,
+    monthly: displayed.filter((inv) => inv.record?.status === "Monthly").length,
+    totalPremium: displayed.reduce(
+      (sum, inv) => sum + parseFloat(inv.premium || 0),
+      0,
+    ),
+  };
 
   return (
     <DashboardLayout>
-      <div className="mb-7">
-        <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Invoice Records
-        </h1>
-        <p className="text-sm text-slate-500 mt-0.5">
-          View and update invoice statuses and remarks
-        </p>
+      {/* Modern Header with Gradient */}
+      <div className="mb-8 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 rounded-3xl blur-3xl" />
+        <div className="relative">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 bg-clip-text text-transparent mb-2">
+                Invoice Records
+              </h1>
+              <p className="text-slate-600 text-sm flex items-center gap-2">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+                Manage and track all invoice records with real-time status
+                updates
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                {stats.total}
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                Total Invoices
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                {stats.weekly}
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                Weekly Billing
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg shadow-purple-200">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                {stats.biweekly}
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                Biweekly Billing
+              </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-xl shadow-lg shadow-emerald-200">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                {stats.monthly}
+              </p>
+              <p className="text-xs text-slate-500 font-medium">
+                Monthly Billing
+              </p>
+            </div>
+
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-white mb-1">
+                ₱
+                {stats.totalPremium.toLocaleString("en-PH", {
+                  minimumFractionDigits: 2,
+                })}
+              </p>
+              <p className="text-xs text-slate-300 font-medium">
+                Total Premium
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Filter bar */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 mb-6">
-        <div className="flex flex-wrap items-center gap-3">
-          <svg
-            className="w-4 h-4 text-slate-400 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"
-            />
-          </svg>
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search invoice no. or client..."
-            className={`${inputCls} w-56`}
-          />
-
-          <div className="h-5 w-px bg-slate-200" />
-
-          <svg
-            className="w-4 h-4 text-slate-400 flex-shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-            />
-          </svg>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className={inputCls}
-          >
-            <option value="">All Statuses</option>
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s} value={s}>
-                {s.charAt(0) + s.slice(1).toLowerCase()}
-              </option>
-            ))}
-          </select>
-
-          {(filterStatus || searchQuery) && (
-            <button
-              onClick={() => {
-                setFilterStatus("");
-                setSearchQuery("");
-              }}
-              className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-red-500 bg-slate-100 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors"
-            >
+      {/* Enhanced Filter Bar */}
+      <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 mb-6">
+        <div className="flex flex-col lg:flex-row gap-4">
+          {/* Search */}
+          <div className="flex-1 relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <svg
-                className="w-3 h-3"
+                className="w-5 h-5 text-slate-400"
                 fill="none"
                 stroke="currentColor"
-                strokeWidth={2.5}
+                strokeWidth={2}
                 viewBox="0 0 24 24"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M6 18L18 6M6 6l12 12"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 15.803a7.5 7.5 0 0010.607 0z"
                 />
               </svg>
-              Clear
-            </button>
-          )}
+            </div>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by invoice number or client name..."
+              className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all"
+            />
+          </div>
 
-          <span className="ml-auto text-xs text-slate-400">
-            {displayed.length} invoice{displayed.length !== 1 ? "s" : ""}
-          </span>
+          {/* Status Filter */}
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg
+                  className="w-5 h-5 text-slate-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
+              </div>
+              <select
+                value={filterStatus}
+                onChange={(e) => setFilterStatus(e.target.value)}
+                className="pl-12 pr-10 py-3 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all appearance-none cursor-pointer"
+              >
+                <option value="">All Billing Cycles</option>
+                {STATUS_OPTIONS.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(filterStatus || searchQuery) && (
+              <button
+                onClick={() => {
+                  setFilterStatus("");
+                  setSearchQuery("");
+                }}
+                className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2.5}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Quick Filter Tabs */}
+        <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+          <button
+            onClick={() => setFilterStatus("")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              !filterStatus
+                ? "bg-slate-900 text-white shadow-md"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+            }`}
+          >
+            All ({stats.total})
+          </button>
+          <button
+            onClick={() => setFilterStatus("Weekly")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterStatus === "Weekly"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-200"
+                : "bg-blue-50 text-blue-600 hover:bg-blue-100"
+            }`}
+          >
+            Weekly ({stats.weekly})
+          </button>
+          <button
+            onClick={() => setFilterStatus("Biweekly")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterStatus === "Biweekly"
+                ? "bg-purple-600 text-white shadow-md shadow-purple-200"
+                : "bg-purple-50 text-purple-600 hover:bg-purple-100"
+            }`}
+          >
+            Biweekly ({stats.biweekly})
+          </button>
+          <button
+            onClick={() => setFilterStatus("Monthly")}
+            className={`px-4 py-2 rounded-lg text-xs font-semibold transition-all ${
+              filterStatus === "Monthly"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-200"
+                : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+            }`}
+          >
+            Monthly ({stats.monthly})
+          </button>
         </div>
       </div>
 
       {error && (
-        <div className="mb-5 flex items-center gap-2 p-4 bg-red-50 text-red-600 text-sm rounded-xl border border-red-100">
-          <svg
-            className="w-4 h-4 flex-shrink-0"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fillRule="evenodd"
-              d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-              clipRule="evenodd"
-            />
-          </svg>
-          {error}
+        <div className="mb-6 flex items-start gap-3 p-4 bg-gradient-to-r from-red-50 to-rose-50 text-red-700 text-sm rounded-2xl border border-red-200 shadow-sm">
+          <div className="p-2 bg-red-100 rounded-lg">
+            <svg
+              className="w-5 h-5 text-red-600"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fillRule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                clipRule="evenodd"
+              />
+            </svg>
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold mb-1">Error Loading Records</p>
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
         </div>
       )}
 
-      {/* Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
+      {/* Modern Table Container */}
+      <div className="bg-white rounded-2xl shadow-xl  border border-slate-200 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3">
-            <svg
-              className="w-8 h-8 text-blue-500 animate-spin"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8H4z"
-              />
-            </svg>
-            <span className="text-slate-400 text-sm">Loading records...</span>
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-slate-200 rounded-full"></div>
+              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+            </div>
+            <p className="text-slate-600 font-medium">
+              Loading invoice records...
+            </p>
+            <p className="text-slate-400 text-sm">
+              Please wait while we fetch your data
+            </p>
           </div>
         ) : displayed.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-2">
-            <svg
-              className="w-12 h-12 text-slate-200"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={1.5}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
-              />
-            </svg>
-            <p className="text-slate-400 text-sm font-medium">
-              No records found
+          <div className="flex flex-col items-center justify-center py-32 gap-4">
+            <div className="p-6 bg-gradient-to-br from-slate-100 to-slate-50 rounded-3xl">
+              <svg
+                className="w-20 h-20 text-slate-300"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={1.5}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                />
+              </svg>
+            </div>
+            <p className="text-slate-600 font-semibold text-lg">
+              No invoices found
             </p>
-            <p className="text-slate-300 text-xs">
-              Create an invoice to see it here
+            <p className="text-slate-400 text-sm max-w-md text-center">
+              {searchQuery || filterStatus
+                ? "Try adjusting your search filters to find what you're looking for"
+                : "Create your first invoice to get started"}
             </p>
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-sm">
+            <table className="w-full">
               <thead>
-                <tr className="border-b border-slate-100">
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                <tr className="border-b-2 border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100/50">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Invoice No.
                   </th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Client
                   </th>
                   {isSuperAdmin && (
-                    <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                    <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                       Broker
                     </th>
                   )}
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Check Date
                   </th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Payroll No.
                   </th>
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Premium
                   </th>
-                  <th className="text-right px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Claim Payment
                   </th>
-                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Employees
                   </th>
-                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
-                    Status
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Billing
                   </th>
-                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Payment Status
                   </th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Remarks
                   </th>
-                  <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Updated By
                   </th>
-                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
+              <tbody className="divide-y divide-slate-100">
                 {displayed.map((inv) => {
                   const status = inv.record?.status || "Weekly";
                   const paymentStatus = inv.record?.paymentStatus;
@@ -383,40 +602,73 @@ export default function InvoiceRecordPage() {
                   return (
                     <tr
                       key={inv.id}
-                      className="hover:bg-blue-50/20 transition-colors group"
+                      className="hover:bg-slate-50/80 transition-all duration-200 group"
                     >
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-lg">
-                          {inv.invoiceNumber}
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-blue-50 rounded-lg">
+                            <svg
+                              className="w-4 h-4 text-blue-600"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                              />
+                            </svg>
+                          </div>
+                          <span className="font-mono text-sm font-bold text-blue-700">
+                            {inv.invoiceNumber}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className="text-sm font-semibold text-slate-800">
+                          {inv.client?.name || "—"}
                         </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-800 font-medium whitespace-nowrap">
-                        {inv.client?.name || "—"}
-                      </td>
                       {isSuperAdmin && (
-                        <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
-                          {inv.broker?.name || "—"}
+                        <td className="px-6 py-5">
+                          <span className="text-sm text-slate-600">
+                            {inv.broker?.name || (
+                              <span className="text-slate-300">—</span>
+                            )}
+                          </span>
                         </td>
                       )}
-                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap text-xs">
-                        {fmtDate(inv.checkDate)}
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <span className="text-sm text-slate-600">
+                          {fmtDate(inv.checkDate)}
+                        </span>
                       </td>
-                      <td className="px-5 py-4 text-slate-500 whitespace-nowrap">
-                        {inv.payrollNumber || (
-                          <span className="text-slate-300">—</span>
-                        )}
+                      <td className="px-6 py-5">
+                        <span className="text-sm text-slate-600">
+                          {inv.payrollNumber || (
+                            <span className="text-slate-300">—</span>
+                          )}
+                        </span>
                       </td>
-                      <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">
-                        ₱{fmt(inv.premium)}
+                      <td className="px-6 py-5 text-right whitespace-nowrap">
+                        <span className="text-sm font-semibold text-slate-900">
+                          ₱{fmt(inv.premium)}
+                        </span>
                       </td>
-                      <td className="px-5 py-4 text-right font-medium text-slate-800 whitespace-nowrap">
-                        ₱{fmt(inv.claimPayment)}
+                      <td className="px-6 py-5 text-right whitespace-nowrap">
+                        <span className="text-sm font-semibold text-slate-900">
+                          ₱{fmt(inv.claimPayment)}
+                        </span>
                       </td>
-                      <td className="px-5 py-4 text-center text-slate-700">
-                        {inv.noOfEmployees ?? "—"}
+                      <td className="px-6 py-5 text-center">
+                        <span className="inline-flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm">
+                          {inv.noOfEmployees ?? "—"}
+                        </span>
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-6 py-5 text-center">
                         {editingId === inv.id ? (
                           <select
                             value={editData.status}
@@ -426,27 +678,27 @@ export default function InvoiceRecordPage() {
                                 status: e.target.value,
                               })
                             }
-                            className="border border-blue-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="border-2 border-blue-400 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
                           >
                             {STATUS_OPTIONS.map((s) => (
                               <option key={s} value={s}>
-                                {s.charAt(0) + s.slice(1).toLowerCase()}
+                                {s}
                               </option>
                             ))}
                           </select>
                         ) : (
                           <span
-                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_STYLES[status]}`}
+                            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold ${STATUS_STYLES[status]}`}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[status]}`}
+                              className={`w-2 h-2 rounded-full ${STATUS_DOT[status]}`}
                             />
-                            {status.charAt(0) + status.slice(1).toLowerCase()}
+                            {status}
                           </span>
                         )}
                       </td>
 
-                      <td className="px-5 py-4 text-center">
+                      <td className="px-6 py-5 text-center">
                         {editingId === inv.id ? (
                           <select
                             value={editData.paymentStatus || ""}
@@ -456,7 +708,7 @@ export default function InvoiceRecordPage() {
                                 paymentStatus: e.target.value || null,
                               })
                             }
-                            className="border border-blue-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+                            className="border-2 border-blue-400 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm min-w-[200px]"
                           >
                             <option value="">— None —</option>
                             {PAYMENT_STATUS_OPTIONS.map((ps) => (
@@ -467,18 +719,18 @@ export default function InvoiceRecordPage() {
                           </select>
                         ) : paymentStatus ? (
                           <span
-                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${PAYMENT_STATUS_STYLES[paymentStatus]}`}
+                            className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${PAYMENT_STATUS_STYLES[paymentStatus]}`}
                           >
                             {paymentStatusLabel}
                           </span>
                         ) : (
-                          <span className="text-slate-300 italic text-xs">
+                          <span className="text-slate-300 italic text-xs font-medium">
                             Not set
                           </span>
                         )}
                       </td>
 
-                      <td className="px-5 py-4 max-w-xs">
+                      <td className="px-6 py-5 max-w-xs">
                         {editingId === inv.id ? (
                           <input
                             type="text"
@@ -490,13 +742,13 @@ export default function InvoiceRecordPage() {
                               })
                             }
                             placeholder="Add remarks..."
-                            className="w-full border border-blue-300 rounded-lg px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            className="w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
                           />
                         ) : (
                           <span
                             className={
                               remarks
-                                ? "text-slate-700"
+                                ? "text-sm text-slate-700"
                                 : "text-slate-300 italic text-xs"
                             }
                           >
@@ -505,48 +757,68 @@ export default function InvoiceRecordPage() {
                         )}
                       </td>
 
-                      <td className="px-5 py-4 whitespace-nowrap">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="text-xs font-medium text-slate-700">
-                            {inv.record?.updatedBy?.name ||
+                      <td className="px-6 py-5 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                            {(inv.record?.updatedBy?.name ||
                               inv.record?.createdBy?.name ||
-                              "—"}
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            {inv.record?.updatedAt
-                              ? fmtDate(inv.record.updatedAt)
-                              : inv.record?.createdAt
-                                ? fmtDate(inv.record.createdAt)
-                                : "—"}
-                          </span>
+                              "?")[0]?.toUpperCase()}
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-semibold text-slate-700">
+                              {inv.record?.updatedBy?.name ||
+                                inv.record?.createdBy?.name ||
+                                "—"}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              {inv.record?.updatedAt
+                                ? fmtDate(inv.record.updatedAt)
+                                : inv.record?.createdAt
+                                  ? fmtDate(inv.record.createdAt)
+                                  : "—"}
+                            </span>
+                          </div>
                         </div>
                       </td>
 
-                      <td className="px-5 py-4 text-center whitespace-nowrap">
+                      <td className="px-6 py-5 text-center whitespace-nowrap">
                         {editingId === inv.id ? (
                           <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handleSave(inv)}
                               disabled={saving}
-                              className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-60 px-3 py-1.5 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 px-4 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg disabled:cursor-not-allowed"
                             >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2.5}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M5 13l4 4L19 7"
+                                />
+                              </svg>
                               {saving ? "Saving..." : "Save"}
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="text-xs text-slate-400 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-lg transition-colors"
+                              className="text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-all"
                             >
                               Cancel
                             </button>
                           </div>
                         ) : (
-                          <div className="opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all">
+                          <div className="opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all duration-200">
                             <button
                               onClick={() => startEdit(inv)}
-                              className="inline-flex items-center gap-1 text-xs text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
                             >
                               <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={2}
@@ -562,10 +834,10 @@ export default function InvoiceRecordPage() {
                             </button>
                             <button
                               onClick={() => handleDelete(inv)}
-                              className="inline-flex items-center gap-1 text-xs text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-lg transition-colors"
+                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
                             >
                               <svg
-                                className="w-3 h-3"
+                                className="w-4 h-4"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={2}
@@ -574,7 +846,7 @@ export default function InvoiceRecordPage() {
                                 <path
                                   strokeLinecap="round"
                                   strokeLinejoin="round"
-                                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                                 />
                               </svg>
                               Delete
