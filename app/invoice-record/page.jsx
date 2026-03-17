@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -77,6 +77,7 @@ export default function InvoiceRecordPage() {
 
   const [filterStatus, setFilterStatus] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   const [editingId, setEditingId] = useState(null); // invoice.id
   const [editData, setEditData] = useState({
@@ -86,11 +87,21 @@ export default function InvoiceRecordPage() {
   });
   const [saving, setSaving] = useState(false);
 
+  // Optimized: Debounce search input to reduce filtering operations
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchInvoices();
   }, []);
 
-  const fetchInvoices = async () => {
+  // Optimized: Use useCallback to prevent unnecessary re-renders
+  const fetchInvoices = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
@@ -101,86 +112,142 @@ export default function InvoiceRecordPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const startEdit = (inv) => {
+  // Optimized: Memoize filtered data to avoid recalculating on every render
+  const displayed = useMemo(() => {
+    return invoices.filter((inv) => {
+      const matchSearch =
+        !debouncedSearch ||
+        inv.invoiceNumber
+          ?.toLowerCase()
+          .includes(debouncedSearch.toLowerCase()) ||
+        inv.client?.name?.toLowerCase().includes(debouncedSearch.toLowerCase());
+      const recordStatus = inv.record?.status || "Weekly";
+      const matchStatus = !filterStatus || recordStatus === filterStatus;
+      return matchSearch && matchStatus;
+    });
+  }, [invoices, debouncedSearch, filterStatus]);
+
+  // Optimized: Memoize stats calculations to avoid recalculating on every render
+  const stats = useMemo(() => {
+    return {
+      total: displayed.length,
+      weekly: displayed.filter((inv) => inv.record?.status === "Weekly").length,
+      biweekly: displayed.filter((inv) => inv.record?.status === "Biweekly")
+        .length,
+      monthly: displayed.filter((inv) => inv.record?.status === "Monthly")
+        .length,
+      totalPremium: displayed.reduce(
+        (sum, inv) => sum + parseFloat(inv.premium || 0),
+        0,
+      ),
+    };
+  }, [displayed]);
+
+  // Optimized: Use useCallback for event handlers
+  const startEdit = useCallback((inv) => {
     setEditingId(inv.id);
     setEditData({
       status: inv.record?.status || "Weekly",
       paymentStatus: inv.record?.paymentStatus || null,
       remarks: inv.record?.remarks || "",
     });
-  };
+  }, []);
 
-  const handleSave = async (inv) => {
-    setSaving(true);
-    try {
-      if (inv.record) {
-        // Update existing record
-        await api.patch(`/invoice-records/${inv.record.id}`, editData);
-      } else {
-        // Create record for legacy invoice that has none
-        await api.post("/invoice-records", {
-          invoiceId: inv.id,
-          ...editData,
-        });
+  // Optimized: Optimistic UI update for better perceived performance
+  const handleSave = useCallback(
+    async (inv) => {
+      setSaving(true);
+      const previousInvoices = invoices;
+
+      try {
+        // Optimistic update
+        setInvoices((prevInvoices) =>
+          prevInvoices.map((i) =>
+            i.id === inv.id
+              ? {
+                  ...i,
+                  record: {
+                    ...i.record,
+                    ...editData,
+                    updatedAt: new Date().toISOString(),
+                  },
+                }
+              : i,
+          ),
+        );
+        setEditingId(null);
+
+        if (inv.record) {
+          await api.patch(`/invoice-records/${inv.record.id}`, editData);
+        } else {
+          await api.post("/invoice-records", {
+            invoiceId: inv.id,
+            ...editData,
+          });
+        }
+
+        // Refresh to get accurate data from server
+        await fetchInvoices();
+      } catch (err) {
+        // Rollback on error
+        setInvoices(previousInvoices);
+        setEditingId(inv.id);
+        alert(err.response?.data?.message || "Failed to save");
+      } finally {
+        setSaving(false);
       }
-      setEditingId(null);
-      fetchInvoices();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to save");
-    } finally {
-      setSaving(false);
-    }
-  };
+    },
+    [editData, invoices, fetchInvoices],
+  );
 
-  const handleDelete = async (inv) => {
-    if (!inv.record) return;
+  // Optimized: Optimistic delete for better UX
+  const handleDelete = useCallback(
+    async (inv) => {
+      if (!inv.record) return;
 
-    if (
-      !confirm(
-        `Delete invoice record for ${inv.invoiceNumber}? This cannot be undone.`,
-      )
-    ) {
-      return;
-    }
+      if (
+        !confirm(
+          `Delete invoice record for ${inv.invoiceNumber}? This cannot be undone.`,
+        )
+      ) {
+        return;
+      }
 
-    try {
-      await api.delete(`/invoice-records/${inv.record.id}`);
-      fetchInvoices();
-    } catch (err) {
-      alert(err.response?.data?.message || "Failed to delete record");
-    }
-  };
+      const previousInvoices = invoices;
 
-  const fmtDate = (d) => (d ? new Date(d).toLocaleDateString("en-PH") : "—");
-  const fmt = (val) =>
-    val !== null && val !== undefined
-      ? Number(val).toLocaleString("en-PH", { minimumFractionDigits: 2 })
-      : "—";
+      try {
+        // Optimistic delete
+        setInvoices((prevInvoices) =>
+          prevInvoices.filter((i) => i.id !== inv.id),
+        );
 
-  const displayed = invoices.filter((inv) => {
-    const matchSearch =
-      !searchQuery ||
-      inv.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      inv.client?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const recordStatus = inv.record?.status || "Weekly";
-    const matchStatus = !filterStatus || recordStatus === filterStatus;
-    return matchSearch && matchStatus;
-  });
+        await api.delete(`/invoice-records/${inv.record.id}`);
 
-  // Calculate stats
-  const stats = {
-    total: displayed.length,
-    weekly: displayed.filter((inv) => inv.record?.status === "Weekly").length,
-    biweekly: displayed.filter((inv) => inv.record?.status === "Biweekly")
-      .length,
-    monthly: displayed.filter((inv) => inv.record?.status === "Monthly").length,
-    totalPremium: displayed.reduce(
-      (sum, inv) => sum + parseFloat(inv.premium || 0),
-      0,
-    ),
-  };
+        // Refresh to ensure consistency
+        await fetchInvoices();
+      } catch (err) {
+        // Rollback on error
+        setInvoices(previousInvoices);
+        alert(err.response?.data?.message || "Failed to delete record");
+      }
+    },
+    [invoices, fetchInvoices],
+  );
+
+  // Optimized: Memoize formatting functions
+  const fmtDate = useCallback(
+    (d) => (d ? new Date(d).toLocaleDateString("en-PH") : "—"),
+    [],
+  );
+  const fmt = useCallback(
+    (val) =>
+      val !== null && val !== undefined
+        ? Number(val).toLocaleString("en-PH", { minimumFractionDigits: 2 })
+        : "—",
+    [],
+  );
 
   return (
     <DashboardLayout>

@@ -57,6 +57,11 @@ model Invoice {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
   record        InvoiceRecord?
+
+  @@index([clientId])
+  @@index([createdById])
+  @@index([createdAt])
+  @@index([brokerId])
 }
 
 model InvoiceRecord {
@@ -72,6 +77,11 @@ model InvoiceRecord {
   updatedBy     User?          @relation(fields: [updatedById], references: [id], name: "InvoiceRecordUpdatedBy")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdById])
+  @@index([updatedById])
 }
 
 enum InvoiceStatus {

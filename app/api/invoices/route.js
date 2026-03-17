@@ -15,26 +15,76 @@ export async function GET(request) {
   const isSuperAdmin = user.role === "SUPER_ADMIN";
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get("clientId");
+  const limit = parseInt(searchParams.get("limit")) || 100; // Default limit
+  const offset = parseInt(searchParams.get("offset")) || 0;
 
   try {
     const where = {};
     if (clientId) where.clientId = parseInt(clientId);
     if (!isSuperAdmin) where.createdById = user.userId;
 
+    // Optimized: Use select to only fetch needed fields
     const invoices = await prisma.invoice.findMany({
       where,
-      include: {
-        client: true,
-        broker: true,
-        createdBy: { select: { id: true, name: true } },
+      select: {
+        id: true,
+        invoiceNumber: true,
+        clientId: true,
+        brokerId: true,
+        checkDate: true,
+        payrollNumber: true,
+        premium: true,
+        claimPayment: true,
+        noOfEmployees: true,
+        createdById: true,
+        createdAt: true,
+        updatedAt: true,
+        client: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        broker: isSuperAdmin
+          ? {
+              select: {
+                id: true,
+                name: true,
+              },
+            }
+          : false,
+        createdBy: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         record: {
-          include: {
-            createdBy: { select: { id: true, name: true } },
-            updatedBy: { select: { id: true, name: true } },
+          select: {
+            id: true,
+            status: true,
+            paymentStatus: true,
+            remarks: true,
+            createdAt: true,
+            updatedAt: true,
+            createdBy: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            updatedBy: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
           },
         },
       },
       orderBy: { createdAt: "desc" },
+      take: limit,
+      skip: offset,
     });
 
     const result = invoices.map((inv) => ({
