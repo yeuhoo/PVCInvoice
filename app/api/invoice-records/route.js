@@ -54,7 +54,7 @@ export async function POST(request) {
   if (error) return error;
 
   try {
-    const { invoiceId, status, remarks } = await request.json();
+    const { invoiceId, status, paymentStatus, remarks } = await request.json();
 
     if (!invoiceId) {
       return NextResponse.json(
@@ -77,6 +77,7 @@ export async function POST(request) {
       data: {
         invoiceId: parseInt(invoiceId),
         status: status || "Weekly",
+        paymentStatus: paymentStatus || null,
         remarks: remarks || null,
         createdById: user.userId,
         updatedById: user.userId,

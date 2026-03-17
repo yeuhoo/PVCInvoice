@@ -105,6 +105,7 @@ export async function POST(request) {
       data: {
         invoiceId: invoice.id,
         status: "Weekly",
+        paymentStatus: null,
         remarks: null,
         createdById: user.userId,
         updatedById: user.userId,

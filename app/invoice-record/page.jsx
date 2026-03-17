@@ -19,6 +19,46 @@ const STATUS_DOT = {
   Monthly: "bg-green-400",
 };
 
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "ReceivedPayment", label: "Received Payment" },
+  { value: "InvoiceReady", label: "Invoice Ready" },
+  { value: "BilledAlready", label: "Billed Already" },
+  { value: "InvoiceSent", label: "Invoice Sent" },
+  { value: "InitialBilling", label: "Initial Billing" },
+  { value: "SampleOnly", label: "Sample Only" },
+  { value: "Cancel", label: "Cancel" },
+  { value: "ACH", label: "ACH" },
+  { value: "CancelAndIssueNew", label: "Cancel & Issue New" },
+  { value: "PleaseBill", label: "Please Bill" },
+  { value: "ACHReturn", label: "ACH Return" },
+  {
+    value: "BilledNeedsMonthlyStatement",
+    label: "Billed Needs Monthly Statement",
+  },
+  { value: "BilledButDidntCharge", label: "Billed but didn't Charge" },
+  { value: "FCACH", label: "F C ACH" },
+  { value: "CreditCard", label: "Credit Card" },
+];
+
+const PAYMENT_STATUS_STYLES = {
+  ReceivedPayment: "bg-green-50 text-green-700 border border-green-200",
+  InvoiceReady: "bg-blue-50 text-blue-700 border border-blue-200",
+  BilledAlready: "bg-purple-50 text-purple-700 border border-purple-200",
+  InvoiceSent: "bg-cyan-50 text-cyan-700 border border-cyan-200",
+  InitialBilling: "bg-yellow-50 text-yellow-700 border border-yellow-200",
+  SampleOnly: "bg-gray-50 text-gray-700 border border-gray-200",
+  Cancel: "bg-red-50 text-red-700 border border-red-200",
+  ACH: "bg-indigo-50 text-indigo-700 border border-indigo-200",
+  CancelAndIssueNew: "bg-orange-50 text-orange-700 border border-orange-200",
+  PleaseBill: "bg-pink-50 text-pink-700 border border-pink-200",
+  ACHReturn: "bg-rose-50 text-rose-700 border border-rose-200",
+  BilledNeedsMonthlyStatement:
+    "bg-violet-50 text-violet-700 border border-violet-200",
+  BilledButDidntCharge: "bg-amber-50 text-amber-700 border border-amber-200",
+  FCACH: "bg-teal-50 text-teal-700 border border-teal-200",
+  CreditCard: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+};
+
 export default function InvoiceRecordPage() {
   const { isSuperAdmin } = useAuth();
 
@@ -31,7 +71,11 @@ export default function InvoiceRecordPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [editingId, setEditingId] = useState(null); // invoice.id
-  const [editData, setEditData] = useState({ status: "Weekly", remarks: "" });
+  const [editData, setEditData] = useState({
+    status: "Weekly",
+    paymentStatus: null,
+    remarks: "",
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -55,6 +99,7 @@ export default function InvoiceRecordPage() {
     setEditingId(inv.id);
     setEditData({
       status: inv.record?.status || "Weekly",
+      paymentStatus: inv.record?.paymentStatus || null,
       remarks: inv.record?.remarks || "",
     });
   };
@@ -311,6 +356,9 @@ export default function InvoiceRecordPage() {
                   <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
                     Status
                   </th>
+                  <th className="text-center px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
+                    Payment Status
+                  </th>
                   <th className="text-left px-5 py-3.5 text-xs font-semibold text-slate-400 uppercase tracking-wider bg-slate-50/60">
                     Remarks
                   </th>
@@ -325,7 +373,13 @@ export default function InvoiceRecordPage() {
               <tbody className="divide-y divide-slate-50">
                 {displayed.map((inv) => {
                   const status = inv.record?.status || "Weekly";
+                  const paymentStatus = inv.record?.paymentStatus;
                   const remarks = inv.record?.remarks || "";
+                  const paymentStatusLabel = paymentStatus
+                    ? PAYMENT_STATUS_OPTIONS.find(
+                        (p) => p.value === paymentStatus,
+                      )?.label
+                    : null;
                   return (
                     <tr
                       key={inv.id}
@@ -388,6 +442,38 @@ export default function InvoiceRecordPage() {
                               className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${STATUS_DOT[status]}`}
                             />
                             {status.charAt(0) + status.slice(1).toLowerCase()}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="px-5 py-4 text-center">
+                        {editingId === inv.id ? (
+                          <select
+                            value={editData.paymentStatus || ""}
+                            onChange={(e) =>
+                              setEditData({
+                                ...editData,
+                                paymentStatus: e.target.value || null,
+                              })
+                            }
+                            className="border border-blue-300 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+                          >
+                            <option value="">— None —</option>
+                            {PAYMENT_STATUS_OPTIONS.map((ps) => (
+                              <option key={ps.value} value={ps.value}>
+                                {ps.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : paymentStatus ? (
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${PAYMENT_STATUS_STYLES[paymentStatus]}`}
+                          >
+                            {paymentStatusLabel}
+                          </span>
+                        ) : (
+                          <span className="text-slate-300 italic text-xs">
+                            Not set
                           </span>
                         )}
                       </td>

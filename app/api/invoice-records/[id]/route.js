@@ -22,6 +22,8 @@ export async function PATCH(request, { params }) {
     const body = await request.json();
     const updateData = {};
     if (body.status !== undefined) updateData.status = body.status;
+    if (body.paymentStatus !== undefined)
+      updateData.paymentStatus = body.paymentStatus || null;
     if (body.remarks !== undefined) updateData.remarks = body.remarks;
     updateData.updatedById = user.userId; // Track who updated
 

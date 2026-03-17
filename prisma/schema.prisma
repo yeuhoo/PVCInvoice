@@ -60,21 +60,40 @@ model Invoice {
 }
 
 model InvoiceRecord {
-  id          Int           @id @default(autoincrement())
-  invoiceId   Int           @unique
-  invoice     Invoice       @relation(fields: [invoiceId], references: [id])
-  status      InvoiceStatus @default(Weekly)
-  remarks     String?
-  createdById Int
-  createdBy   User          @relation(fields: [createdById], references: [id], name: "InvoiceRecordCreatedBy")
-  updatedById Int?
-  updatedBy   User?         @relation(fields: [updatedById], references: [id], name: "InvoiceRecordUpdatedBy")
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            Int            @id @default(autoincrement())
+  invoiceId     Int            @unique
+  invoice       Invoice        @relation(fields: [invoiceId], references: [id])
+  status        InvoiceStatus  @default(Weekly)
+  paymentStatus PaymentStatus?
+  remarks       String?
+  createdById   Int
+  createdBy     User           @relation(fields: [createdById], references: [id], name: "InvoiceRecordCreatedBy")
+  updatedById   Int?
+  updatedBy     User?          @relation(fields: [updatedById], references: [id], name: "InvoiceRecordUpdatedBy")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 enum InvoiceStatus {
   Weekly
   Biweekly
   Monthly
+}
+
+enum PaymentStatus {
+  ReceivedPayment
+  InvoiceReady
+  BilledAlready
+  InvoiceSent
+  InitialBilling
+  SampleOnly
+  Cancel
+  ACH
+  CancelAndIssueNew
+  PleaseBill
+  ACHReturn
+  BilledNeedsMonthlyStatement
+  BilledButDidntCharge
+  FCACH
+  CreditCard
 }
