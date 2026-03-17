@@ -48,3 +48,31 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 }
+
+// DELETE /api/invoice-records/:id
+export async function DELETE(request, { params }) {
+  const { user, error } = verifyToken(request);
+  if (error) return error;
+
+  const { id } = await params;
+
+  try {
+    const record = await prisma.invoiceRecord.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!record)
+      return NextResponse.json(
+        { message: "Record not found" },
+        { status: 404 },
+      );
+
+    await prisma.invoiceRecord.delete({
+      where: { id: parseInt(id) },
+    });
+
+    return NextResponse.json({ message: "Record deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: "Server error" }, { status: 500 });
+  }
+}
