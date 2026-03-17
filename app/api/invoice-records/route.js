@@ -76,7 +76,7 @@ export async function POST(request) {
     const record = await prisma.invoiceRecord.create({
       data: {
         invoiceId: parseInt(invoiceId),
-        status: status || "OPEN",
+        status: status || "Weekly",
         remarks: remarks || null,
         createdById: user.userId,
         updatedById: user.userId,

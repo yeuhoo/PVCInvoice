@@ -2,7 +2,7 @@
 CREATE TYPE "Role" AS ENUM ('SUPER_ADMIN', 'ADMIN');
 
 -- CreateEnum
-CREATE TYPE "InvoiceStatus" AS ENUM ('OPEN', 'ACH', 'Received');
+CREATE TYPE "InvoiceStatus" AS ENUM ('Weekly', 'Biweekly', 'Monthly');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -57,7 +57,7 @@ CREATE TABLE "Invoice" (
 CREATE TABLE "InvoiceRecord" (
     "id" SERIAL NOT NULL,
     "invoiceId" INTEGER NOT NULL,
-    "status" "InvoiceStatus" NOT NULL DEFAULT 'OPEN',
+    "status" "InvoiceStatus" NOT NULL DEFAULT 'Weekly',
     "remarks" TEXT,
     "createdById" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

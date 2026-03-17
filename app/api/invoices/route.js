@@ -100,11 +100,11 @@ export async function POST(request) {
       include: { client: true, broker: true },
     });
 
-    // Auto-create an InvoiceRecord for this invoice (status defaults to OPEN)
+    // Auto-create an InvoiceRecord for this invoice (status defaults to Weekly)
     await prisma.invoiceRecord.create({
       data: {
         invoiceId: invoice.id,
-        status: "OPEN",
+        status: "Weekly",
         remarks: null,
         createdById: user.userId,
         updatedById: user.userId,

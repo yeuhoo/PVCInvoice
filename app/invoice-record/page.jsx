@@ -5,18 +5,18 @@ import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 
-const STATUS_OPTIONS = ["OPEN", "ACH", "Received"];
+const STATUS_OPTIONS = ["Weekly", "Biweekly", "Monthly"];
 
 const STATUS_STYLES = {
-  OPEN: "bg-amber-50 text-amber-700 border border-amber-200",
-  ACH: "bg-blue-50 text-blue-700 border border-blue-200",
-  Received: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  Weekly: "bg-blue-50 text-blue-700 border border-blue-200",
+  Biweekly: "bg-purple-50 text-purple-700 border border-purple-200",
+  Monthly: "bg-green-50 text-green-700 border border-green-200",
 };
 
 const STATUS_DOT = {
-  OPEN: "bg-amber-400",
-  ACH: "bg-blue-400",
-  Received: "bg-emerald-400",
+  Weekly: "bg-blue-400",
+  Biweekly: "bg-purple-400",
+  Monthly: "bg-green-400",
 };
 
 export default function InvoiceRecordPage() {
@@ -31,7 +31,7 @@ export default function InvoiceRecordPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [editingId, setEditingId] = useState(null); // invoice.id
-  const [editData, setEditData] = useState({ status: "OPEN", remarks: "" });
+  const [editData, setEditData] = useState({ status: "Weekly", remarks: "" });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export default function InvoiceRecordPage() {
   const startEdit = (inv) => {
     setEditingId(inv.id);
     setEditData({
-      status: inv.record?.status || "OPEN",
+      status: inv.record?.status || "Weekly",
       remarks: inv.record?.remarks || "",
     });
   };
@@ -111,7 +111,7 @@ export default function InvoiceRecordPage() {
       !searchQuery ||
       inv.invoiceNumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       inv.client?.name?.toLowerCase().includes(searchQuery.toLowerCase());
-    const recordStatus = inv.record?.status || "OPEN";
+    const recordStatus = inv.record?.status || "Weekly";
     const matchStatus = !filterStatus || recordStatus === filterStatus;
     return matchSearch && matchStatus;
   });
@@ -324,7 +324,7 @@ export default function InvoiceRecordPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {displayed.map((inv) => {
-                  const status = inv.record?.status || "OPEN";
+                  const status = inv.record?.status || "Weekly";
                   const remarks = inv.record?.remarks || "";
                   return (
                     <tr
