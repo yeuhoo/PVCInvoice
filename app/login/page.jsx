@@ -34,7 +34,7 @@ export default function LoginPage() {
         setLoading(false);
       }
     },
-    [login, router],
+    [form, login, router],
   );
 
   return (
