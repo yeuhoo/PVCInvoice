@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import dynamic from "next/dynamic";
+import { pdf } from "@react-pdf/renderer";
 import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
+import { InvoicePDF } from "@/components/InvoicePDF";
 
 const STATUS_OPTIONS = ["Weekly", "Biweekly", "Monthly"];
 
@@ -86,6 +89,11 @@ export default function InvoiceRecordPage() {
     remarks: "",
   });
   const [saving, setSaving] = useState(false);
+
+  // PDF Preview states
+  const [previewInvoice, setPreviewInvoice] = useState(null);
+  const [pdfUrl, setPdfUrl] = useState(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   // Optimized: Debounce search input to reduce filtering operations
   useEffect(() => {
@@ -248,6 +256,49 @@ export default function InvoiceRecordPage() {
         : "—",
     [],
   );
+
+  // PDF handling functions
+  const handlePreviewPDF = useCallback(async (invoice) => {
+    setGeneratingPdf(true);
+    setPreviewInvoice(invoice);
+    try {
+      const blob = await pdf(<InvoicePDF invoice={invoice} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      setPdfUrl(url);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Failed to generate PDF preview");
+      setPreviewInvoice(null);
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }, []);
+
+  const handleDownloadPDF = useCallback(async () => {
+    if (!previewInvoice) return;
+    try {
+      const blob = await pdf(<InvoicePDF invoice={previewInvoice} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `Invoice-${previewInvoice.invoiceNumber || "document"}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      alert("Failed to download PDF");
+    }
+  }, [previewInvoice]);
+
+  const closePreview = useCallback(() => {
+    if (pdfUrl) {
+      URL.revokeObjectURL(pdfUrl);
+    }
+    setPreviewInvoice(null);
+    setPdfUrl(null);
+  }, [pdfUrl]);
 
   return (
     <DashboardLayout>
@@ -881,6 +932,26 @@ export default function InvoiceRecordPage() {
                         ) : (
                           <div className="opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all duration-200">
                             <button
+                              onClick={() => handlePreviewPDF(inv)}
+                              disabled={generatingPdf}
+                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                            >
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                                />
+                              </svg>
+                              PDF
+                            </button>
+                            <button
                               onClick={() => startEdit(inv)}
                               className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
                             >
@@ -929,6 +1000,89 @@ export default function InvoiceRecordPage() {
           </div>
         )}
       </div>
+
+      {/* PDF Preview Modal */}
+      {previewInvoice && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900">
+                  Invoice Preview
+                </h3>
+                <p className="text-sm text-slate-500 mt-1">
+                  Invoice #{previewInvoice.invoiceNumber} -{" "}
+                  {previewInvoice.client?.name}
+                </p>
+              </div>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleDownloadPDF}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all shadow-md hover:shadow-lg"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2.5}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                    />
+                  </svg>
+                  Download PDF
+                </button>
+                <button
+                  onClick={closePreview}
+                  className="text-slate-400 hover:text-slate-600 transition-colors p-2"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* PDF Viewer */}
+            <div className="flex-1 overflow-auto bg-slate-100 p-6">
+              {generatingPdf ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+                    <p className="text-slate-600 font-medium">
+                      Generating PDF...
+                    </p>
+                  </div>
+                </div>
+              ) : pdfUrl ? (
+                <iframe
+                  src={pdfUrl}
+                  className="w-full h-full min-h-[600px] rounded-xl shadow-lg bg-white"
+                  title="Invoice PDF Preview"
+                />
+              ) : (
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-slate-500">Failed to load PDF preview</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 }
