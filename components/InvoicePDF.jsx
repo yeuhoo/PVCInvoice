@@ -4,32 +4,12 @@ import {
   Text,
   View,
   StyleSheet,
-  Font,
 } from "@react-pdf/renderer";
-
-// Register fonts
-Font.register({
-  family: "Inter",
-  fonts: [
-    {
-      src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2",
-      fontWeight: 400,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuI6fAZ9hiA.woff2",
-      fontWeight: 600,
-    },
-    {
-      src: "https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.woff2",
-      fontWeight: 700,
-    },
-  ],
-});
 
 const styles = StyleSheet.create({
   page: {
     padding: 40,
-    fontFamily: "Inter",
+    fontFamily: "Helvetica",
     fontSize: 10,
     backgroundColor: "#ffffff",
   },
@@ -56,7 +36,7 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 48,
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: "#ffffff",
     letterSpacing: 2,
   },
@@ -75,7 +55,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 11,
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#333333",
     marginBottom: 4,
   },
@@ -94,7 +74,7 @@ const styles = StyleSheet.create({
   },
   detailLabel: {
     fontSize: 10,
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#333333",
   },
   detailValue: {
@@ -111,7 +91,7 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     fontSize: 12,
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#333333",
     marginBottom: 15,
   },
@@ -150,7 +130,7 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   boldText: {
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#1f2937",
   },
   employeeCalc: {
@@ -180,7 +160,7 @@ const styles = StyleSheet.create({
   },
   savingsValue: {
     fontSize: 10,
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#1f2937",
     width: 100,
     textAlign: "right",
@@ -195,14 +175,14 @@ const styles = StyleSheet.create({
   },
   totalSavingsLabel: {
     fontSize: 11,
-    fontWeight: 600,
+    fontFamily: "Helvetica-Bold",
     color: "#1f2937",
     textAlign: "right",
     flex: 1,
   },
   totalSavingsValue: {
     fontSize: 11,
-    fontWeight: 700,
+    fontFamily: "Helvetica-Bold",
     color: "#1f2937",
     width: 100,
     textAlign: "right",
