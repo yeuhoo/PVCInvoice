@@ -52,6 +52,7 @@ model Invoice {
   premium       Decimal        @default(0) @db.Decimal(12, 2)
   claimPayment  Decimal        @default(0) @db.Decimal(12, 2)
   noOfEmployees Int            @default(0)
+  employeeRate  Decimal        @default(7.5) @db.Decimal(12, 2)
   createdById   Int
   createdBy     User           @relation(fields: [createdById], references: [id])
   createdAt     DateTime       @default(now())

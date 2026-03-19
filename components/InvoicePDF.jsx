@@ -201,7 +201,7 @@ export const InvoicePDF = ({ invoice }) => {
   const claimPayment = parseFloat(invoice.claimPayment || 0);
   const totalDifference = premium - claimPayment;
   const noOfEmployees = parseInt(invoice.noOfEmployees || 0);
-  const ratePerEmployee = 7.5;
+  const ratePerEmployee = parseFloat(invoice.employeeRate || 7.5);
   const adminFee = noOfEmployees * ratePerEmployee;
   const totalInvoice = totalDifference + adminFee;
 

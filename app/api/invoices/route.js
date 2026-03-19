@@ -36,6 +36,7 @@ export async function GET(request) {
         premium: true,
         claimPayment: true,
         noOfEmployees: true,
+        employeeRate: true,
         createdById: true,
         createdAt: true,
         updatedAt: true,
@@ -92,6 +93,7 @@ export async function GET(request) {
       broker: isSuperAdmin ? inv.broker : undefined,
       premium: inv.premium.toString(),
       claimPayment: inv.claimPayment.toString(),
+      employeeRate: inv.employeeRate.toString(),
     }));
 
     return NextResponse.json(result);
@@ -115,6 +117,7 @@ export async function POST(request) {
       premium,
       claimPayment,
       noOfEmployees,
+      employeeRate,
       billingStatus,
       paymentStatus,
       remarks,
@@ -148,6 +151,7 @@ export async function POST(request) {
         premium: parseFloat(premium) || 0,
         claimPayment: parseFloat(claimPayment) || 0,
         noOfEmployees: parseInt(noOfEmployees) || 0,
+        employeeRate: parseFloat(employeeRate) || 7.5,
         createdById: user.userId,
       },
       include: { client: true, broker: true },
@@ -170,6 +174,7 @@ export async function POST(request) {
         ...invoice,
         premium: invoice.premium.toString(),
         claimPayment: invoice.claimPayment.toString(),
+        employeeRate: invoice.employeeRate.toString(),
       },
       { status: 201 },
     );

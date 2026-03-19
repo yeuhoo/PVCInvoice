@@ -35,6 +35,7 @@ export async function GET(request, { params }) {
       broker: isSuperAdmin ? invoice.broker : undefined,
       premium: invoice.premium.toString(),
       claimPayment: invoice.claimPayment.toString(),
+      employeeRate: invoice.employeeRate.toString(),
     });
   } catch (err) {
     console.error(err);
@@ -68,6 +69,8 @@ export async function PATCH(request, { params }) {
 
     if (body.noOfEmployees !== undefined)
       updateData.noOfEmployees = parseInt(body.noOfEmployees);
+    if (body.employeeRate !== undefined)
+      updateData.employeeRate = parseFloat(body.employeeRate);
 
     if (isSuperAdmin) {
       if (body.checkDate !== undefined)
@@ -94,6 +97,7 @@ export async function PATCH(request, { params }) {
       ...updated,
       premium: updated.premium.toString(),
       claimPayment: updated.claimPayment.toString(),
+      employeeRate: updated.employeeRate.toString(),
     });
   } catch (err) {
     console.error(err);

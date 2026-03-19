@@ -160,6 +160,7 @@ export default function InvoiceRecordPage() {
       status: inv.record?.status || "Weekly",
       paymentStatus: inv.record?.paymentStatus || null,
       remarks: inv.record?.remarks || "",
+      employeeRate: inv.employeeRate || "7.50",
     });
   }, []);
 
@@ -176,9 +177,12 @@ export default function InvoiceRecordPage() {
             i.id === inv.id
               ? {
                   ...i,
+                  employeeRate: editData.employeeRate,
                   record: {
                     ...i.record,
-                    ...editData,
+                    status: editData.status,
+                    paymentStatus: editData.paymentStatus,
+                    remarks: editData.remarks,
                     updatedAt: new Date().toISOString(),
                   },
                 }
@@ -187,14 +191,26 @@ export default function InvoiceRecordPage() {
         );
         setEditingId(null);
 
+        // Update invoice record (billing status, payment status, remarks)
         if (inv.record) {
-          await api.patch(`/invoice-records/${inv.record.id}`, editData);
+          await api.patch(`/invoice-records/${inv.record.id}`, {
+            status: editData.status,
+            paymentStatus: editData.paymentStatus,
+            remarks: editData.remarks,
+          });
         } else {
           await api.post("/invoice-records", {
             invoiceId: inv.id,
-            ...editData,
+            status: editData.status,
+            paymentStatus: editData.paymentStatus,
+            remarks: editData.remarks,
           });
         }
+
+        // Update invoice (employee rate)
+        await api.patch(`/invoices/${inv.id}`, {
+          employeeRate: editData.employeeRate,
+        });
 
         // Refresh to get accurate data from server
         await fetchInvoices();
@@ -691,6 +707,9 @@ export default function InvoiceRecordPage() {
                     Employees
                   </th>
                   <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Rate
+                  </th>
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Billing
                   </th>
                   <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
@@ -784,6 +803,35 @@ export default function InvoiceRecordPage() {
                         <span className="inline-flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm">
                           {inv.noOfEmployees ?? "—"}
                         </span>
+                      </td>
+
+                      {/* Employee Rate - only visible for Weekly/Biweekly */}
+                      <td className="px-6 py-5 text-center">
+                        {inv.record?.status === "Weekly" ||
+                        inv.record?.status === "Biweekly" ? (
+                          editingId === inv.id ? (
+                            <input
+                              type="number"
+                              value={editData.employeeRate || ""}
+                              onChange={(e) =>
+                                setEditData({
+                                  ...editData,
+                                  employeeRate: e.target.value,
+                                })
+                              }
+                              min="0"
+                              step="0.01"
+                              placeholder="7.50"
+                              className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+                          ) : (
+                            <span className="text-sm font-semibold text-slate-900">
+                              ${fmt(inv.employeeRate || "0")}
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-slate-300">—</span>
+                        )}
                       </td>
 
                       <td className="px-6 py-5 text-center">
