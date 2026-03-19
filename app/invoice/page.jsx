@@ -13,7 +13,7 @@ const EMPTY_FORM = {
   premium: "",
   claimPayment: "",
   noOfEmployees: "",
-  employeeRate: "7.50",
+  employeeRate: "",
   billingStatus: "Weekly",
   paymentStatus: "",
   remarks: "",
