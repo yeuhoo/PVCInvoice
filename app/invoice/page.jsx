@@ -148,6 +148,10 @@ export default function InvoicePage() {
           premium: form.premium || "0",
           claimPayment: form.claimPayment || "0",
           noOfEmployees: form.noOfEmployees || 0,
+          employeeRate: form.employeeRate || undefined,
+          billingStatus: form.billingStatus || "Weekly",
+          paymentStatus: form.paymentStatus || undefined,
+          remarks: form.remarks || undefined,
         });
 
         setShowModal(false);
