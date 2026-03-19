@@ -115,6 +115,9 @@ export async function POST(request) {
       premium,
       claimPayment,
       noOfEmployees,
+      billingStatus,
+      paymentStatus,
+      remarks,
     } = await request.json();
 
     if (!clientId) {
@@ -150,13 +153,13 @@ export async function POST(request) {
       include: { client: true, broker: true },
     });
 
-    // Auto-create an InvoiceRecord for this invoice (status defaults to Weekly)
+    // Auto-create an InvoiceRecord for this invoice
     await prisma.invoiceRecord.create({
       data: {
         invoiceId: invoice.id,
-        status: "Weekly",
-        paymentStatus: null,
-        remarks: null,
+        status: billingStatus || "Weekly",
+        paymentStatus: paymentStatus || null,
+        remarks: remarks || null,
         createdById: user.userId,
         updatedById: user.userId,
       },

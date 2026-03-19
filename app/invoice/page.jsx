@@ -13,7 +13,34 @@ const EMPTY_FORM = {
   premium: "",
   claimPayment: "",
   noOfEmployees: "",
+  billingStatus: "Weekly",
+  paymentStatus: "",
+  remarks: "",
 };
+
+const BILLING_OPTIONS = ["Weekly", "Biweekly", "Monthly"];
+
+const PAYMENT_STATUS_OPTIONS = [
+  { value: "", label: "None" },
+  { value: "ReceivedPayment", label: "Received Payment" },
+  { value: "InvoiceReady", label: "Invoice Ready" },
+  { value: "BilledAlready", label: "Billed Already" },
+  { value: "InvoiceSent", label: "Invoice Sent" },
+  { value: "InitialBilling", label: "Initial Billing" },
+  { value: "SampleOnly", label: "Sample Only" },
+  { value: "Cancel", label: "Cancel" },
+  { value: "ACH", label: "ACH" },
+  { value: "CancelAndIssueNew", label: "Cancel & Issue New" },
+  { value: "PleaseBill", label: "Please Bill" },
+  { value: "ACHReturn", label: "ACH Return" },
+  {
+    value: "BilledNeedsMonthlyStatement",
+    label: "Billed Needs Monthly Statement",
+  },
+  { value: "BilledButDidntCharge", label: "Billed but didn't Charge" },
+  { value: "FCACH", label: "F C ACH" },
+  { value: "CreditCard", label: "Credit Card" },
+];
 
 export default function InvoicePage() {
   const { isSuperAdmin } = useAuth();
@@ -341,6 +368,59 @@ export default function InvoicePage() {
                     min="0"
                     placeholder="0"
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+
+                {/* Billing Status */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                    Billing Status
+                  </label>
+                  <select
+                    name="billingStatus"
+                    value={form.billingStatus}
+                    onChange={handleFormChange}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {BILLING_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Payment Status */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                    Payment Status
+                  </label>
+                  <select
+                    name="paymentStatus"
+                    value={form.paymentStatus}
+                    onChange={handleFormChange}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {PAYMENT_STATUS_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Remarks */}
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                    Remarks
+                  </label>
+                  <textarea
+                    name="remarks"
+                    value={form.remarks}
+                    onChange={handleFormChange}
+                    rows="2"
+                    placeholder="Optional notes..."
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
                   />
                 </div>
               </div>
