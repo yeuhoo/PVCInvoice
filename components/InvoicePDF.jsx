@@ -197,11 +197,17 @@ const formatDate = (date) => {
 };
 
 export const InvoicePDF = ({ invoice }) => {
+  console.log("InvoicePDF - Full invoice object:", invoice);
+  console.log("InvoicePDF - employeeRate:", invoice.employeeRate);
+  
   const premium = parseFloat(invoice.premium || 0);
   const claimPayment = parseFloat(invoice.claimPayment || 0);
   const totalDifference = premium - claimPayment;
   const noOfEmployees = parseInt(invoice.noOfEmployees || 0);
   const ratePerEmployee = parseFloat(invoice.employeeRate || 7.5);
+  
+  console.log("InvoicePDF - Calculated ratePerEmployee:", ratePerEmployee);
+  
   const adminFee = noOfEmployees * ratePerEmployee;
   const totalInvoice = totalDifference + adminFee;
 

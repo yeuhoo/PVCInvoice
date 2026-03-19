@@ -140,7 +140,7 @@ export default function InvoicePage() {
         }
 
         // Create the invoice (invoice record is auto-created by the backend)
-        await api.post("/invoices", {
+        const invoiceData = {
           clientId,
           brokerId,
           checkDate: form.checkDate || undefined,
@@ -152,7 +152,12 @@ export default function InvoicePage() {
           billingStatus: form.billingStatus || "Weekly",
           paymentStatus: form.paymentStatus || undefined,
           remarks: form.remarks || undefined,
-        });
+        };
+        
+        console.log("Creating invoice with data:", invoiceData);
+        console.log("form.employeeRate value:", form.employeeRate);
+        
+        await api.post("/invoices", invoiceData);
 
         setShowModal(false);
         setForm(EMPTY_FORM);

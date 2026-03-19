@@ -114,6 +114,8 @@ export default function InvoiceRecordPage() {
     setError("");
     try {
       const res = await api.get("/invoices");
+      console.log("fetchInvoices - API response:", res.data);
+      console.log("fetchInvoices - first invoice employeeRate:", res.data[0]?.employeeRate);
       setInvoices(res.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load records");
@@ -275,6 +277,9 @@ export default function InvoiceRecordPage() {
 
   // PDF handling functions
   const handlePreviewPDF = useCallback(async (invoice) => {
+    console.log("handlePreviewPDF - invoice object:", invoice);
+    console.log("handlePreviewPDF - employeeRate:", invoice.employeeRate);
+    
     setGeneratingPdf(true);
     setPreviewInvoice(invoice);
     try {
