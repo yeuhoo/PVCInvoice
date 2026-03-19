@@ -324,7 +324,7 @@ export default function InvoicePage() {
                 {/* Premium */}
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Premium (₱)
+                    Premium ($)
                   </label>
                   <input
                     type="number"
@@ -341,7 +341,7 @@ export default function InvoicePage() {
                 {/* Claim Payment */}
                 <div>
                   <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Claim Payment (₱)
+                    Claim Payment ($)
                   </label>
                   <input
                     type="number"

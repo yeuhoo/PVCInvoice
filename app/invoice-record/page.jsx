@@ -450,8 +450,8 @@ export default function InvoiceRecordPage() {
                 </div>
               </div>
               <p className="text-2xl font-bold text-white mb-1">
-                ₱
-                {stats.totalPremium.toLocaleString("en-PH", {
+                $
+                {stats.totalPremium.toLocaleString("en-US", {
                   minimumFractionDigits: 2,
                 })}
               </p>
@@ -772,12 +772,12 @@ export default function InvoiceRecordPage() {
                       </td>
                       <td className="px-6 py-5 text-right whitespace-nowrap">
                         <span className="text-sm font-semibold text-slate-900">
-                          ₱{fmt(inv.premium)}
+                          ${fmt(inv.premium)}
                         </span>
                       </td>
                       <td className="px-6 py-5 text-right whitespace-nowrap">
                         <span className="text-sm font-semibold text-slate-900">
-                          ₱{fmt(inv.claimPayment)}
+                          ${fmt(inv.claimPayment)}
                         </span>
                       </td>
                       <td className="px-6 py-5 text-center">
