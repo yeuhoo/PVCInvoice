@@ -153,10 +153,10 @@ export default function InvoicePage() {
           paymentStatus: form.paymentStatus || undefined,
           remarks: form.remarks || undefined,
         };
-        
+
         console.log("Creating invoice with data:", invoiceData);
         console.log("form.employeeRate value:", form.employeeRate);
-        
+
         await api.post("/invoices", invoiceData);
 
         setShowModal(false);
