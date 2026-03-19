@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
@@ -20,23 +20,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  logo: {
-    width: 180,
-    height: 80,
-    backgroundColor: "#6b7bc9",
-    padding: 15,
-    justifyContent: "center",
-    alignItems: "center",
+  logoImage: {
+    width: 100,
+    height: 100,
+    objectFit: "contain",
+  },
+  logoTextContainer: {
+    marginLeft: 15,
   },
   logoText: {
-    fontSize: 48,
+    fontSize: 24,
     fontFamily: "Helvetica-Bold",
-    color: "#ffffff",
-    letterSpacing: 2,
+    color: "#1e293b",
+    letterSpacing: 1,
   },
   logoSubtext: {
-    fontSize: 9,
-    color: "#ffffff",
+    fontSize: 10,
+    color: "#64748b",
     marginTop: 2,
   },
   invoiceHeader: {
@@ -225,7 +225,11 @@ export const InvoicePDF = ({ invoice }) => {
 
         {/* Logo section */}
         <View style={styles.logoContainer}>
-          <View style={styles.logo}>
+          <Image
+            src="/images/pvclogo.jpeg"
+            style={styles.logoImage}
+          />
+          <View style={styles.logoTextContainer}>
             <Text style={styles.logoText}>PVC</Text>
             <Text style={styles.logoSubtext}>Preventive Virtual Care</Text>
           </View>
