@@ -120,9 +120,7 @@ export async function DELETE(request, { params }) {
   const { id } = await params;
 
   try {
-    await prisma.invoiceRecord.deleteMany({
-      where: { invoiceId: parseInt(id) },
-    });
+    // Delete invoice (cascade deletes invoice record automatically)
     await prisma.invoice.delete({ where: { id: parseInt(id) } });
     return NextResponse.json({ message: "Invoice deleted" });
   } catch (err) {
