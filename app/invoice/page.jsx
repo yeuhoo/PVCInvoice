@@ -372,6 +372,25 @@ export default function InvoicePage() {
                   />
                 </div>
 
+                {/* Billing Status */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-600 mb-1">
+                    Billing Status
+                  </label>
+                  <select
+                    name="billingStatus"
+                    value={form.billingStatus}
+                    onChange={handleFormChange}
+                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {BILLING_OPTIONS.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Employee Rate - Only for Weekly/Biweekly */}
                 {(form.billingStatus === "Weekly" ||
                   form.billingStatus === "Biweekly") && (
@@ -391,25 +410,6 @@ export default function InvoicePage() {
                     />
                   </div>
                 )}
-
-                {/* Billing Status */}
-                <div>
-                  <label className="block text-xs font-medium text-slate-600 mb-1">
-                    Billing Status
-                  </label>
-                  <select
-                    name="billingStatus"
-                    value={form.billingStatus}
-                    onChange={handleFormChange}
-                    className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {BILLING_OPTIONS.map((option) => (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
                 {/* Payment Status */}
                 <div>
