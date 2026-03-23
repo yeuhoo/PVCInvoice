@@ -13,6 +13,14 @@ export async function GET(request) {
   if (error) return error;
 
   const isSuperAdmin = user.role === "SUPER_ADMIN";
+  const isAdmin = user.role === "ADMIN";
+  const isBroker = user.role === "BROKER";
+
+  // Brokers should not access invoices API
+  if (isBroker) {
+    return NextResponse.json({ message: "Access denied" }, { status: 403 });
+  }
+
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get("clientId");
   const limit = parseInt(searchParams.get("limit")) || 100; // Default limit
@@ -21,7 +29,8 @@ export async function GET(request) {
   try {
     const where = {};
     if (clientId) where.clientId = parseInt(clientId);
-    if (!isSuperAdmin) where.createdById = user.userId;
+
+    // Admin and Super Admin see all invoices, Broker is denied access above
 
     // Optimized: Use select to only fetch needed fields
     const invoices = await prisma.invoice.findMany({
@@ -46,14 +55,12 @@ export async function GET(request) {
             name: true,
           },
         },
-        broker: isSuperAdmin
-          ? {
-              select: {
-                id: true,
-                name: true,
-              },
-            }
-          : false,
+        broker: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
         createdBy: {
           select: {
             id: true,
@@ -90,7 +97,6 @@ export async function GET(request) {
 
     const result = invoices.map((inv) => ({
       ...inv,
-      broker: isSuperAdmin ? inv.broker : undefined,
       premium: inv.premium.toString(),
       claimPayment: inv.claimPayment.toString(),
       employeeRate: inv.employeeRate.toString(),

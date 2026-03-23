@@ -8,6 +8,9 @@ export async function GET(request) {
   if (error) return error;
 
   const isSuperAdmin = user.role === "SUPER_ADMIN";
+  const isAdmin = user.role === "ADMIN";
+  const isBroker = user.role === "BROKER";
+
   const { searchParams } = new URL(request.url);
   const status = searchParams.get("status");
   const invoiceId = searchParams.get("invoiceId");
@@ -16,6 +19,25 @@ export async function GET(request) {
     const where = {};
     if (status) where.status = status;
     if (invoiceId) where.invoiceId = parseInt(invoiceId);
+
+    // Role-based filtering - Admin and Super Admin see all records
+    if (isBroker) {
+      // Broker sees only records where they are the assigned broker
+      // First, get the broker entity this user is linked to
+      const brokerUser = await prisma.user.findUnique({
+        where: { id: user.userId },
+        select: { linkedBrokerId: true },
+      });
+
+      if (brokerUser?.linkedBrokerId) {
+        where.invoice = {
+          brokerId: brokerUser.linkedBrokerId,
+        };
+      } else {
+        // Broker user has no linked broker, return empty array
+        return NextResponse.json([]);
+      }
+    }
 
     const records = await prisma.invoiceRecord.findMany({
       where,
@@ -35,9 +57,9 @@ export async function GET(request) {
       ...rec,
       invoice: {
         ...rec.invoice,
-        broker: isSuperAdmin ? rec.invoice.broker : undefined,
         premium: rec.invoice.premium.toString(),
         claimPayment: rec.invoice.claimPayment.toString(),
+        employeeRate: rec.invoice.employeeRate.toString(),
       },
     }));
 

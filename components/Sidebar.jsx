@@ -10,6 +10,7 @@ const navItems = [
   {
     label: "Invoice",
     path: "/invoice",
+    roles: ["SUPER_ADMIN", "ADMIN"], // Only super admin and admin
     icon: (
       <svg
         className="w-[18px] h-[18px]"
@@ -29,6 +30,7 @@ const navItems = [
   {
     label: "Invoice Record",
     path: "/invoice-record",
+    roles: ["SUPER_ADMIN", "ADMIN", "BROKER"], // All roles
     icon: (
       <svg
         className="w-[18px] h-[18px]"
@@ -45,10 +47,30 @@ const navItems = [
       </svg>
     ),
   },
+  {
+    label: "Users",
+    path: "/users",
+    roles: ["SUPER_ADMIN"], // Only super admin
+    icon: (
+      <svg
+        className="w-[18px] h-[18px]"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+        />
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar() {
-  const { user, logout, isSuperAdmin } = useAuth();
+  const { user, logout, isSuperAdmin, isAdmin, isBroker } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
@@ -56,6 +78,13 @@ export default function Sidebar() {
     logout();
     router.replace("/login");
   }, [logout, router]);
+
+  // Filter nav items based on role
+  const visibleNavItems = useMemo(() => {
+    const userRole = user?.role;
+    if (!userRole) return [];
+    return navItems.filter((item) => item.roles.includes(userRole));
+  }, [user?.role]);
 
   const initials = useMemo(() => {
     return user?.name
@@ -77,21 +106,18 @@ export default function Sidebar() {
     >
       {/* Brand */}
       <div className="px-6 pt-7 pb-5">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-lg bg-white flex items-center justify-center shadow-lg overflow-hidden">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
             <Image
               src="/images/pvclogo.jpeg"
               alt="PVC Logo"
-              width={48}
-              height={48}
+              width={80}
+              height={80}
               className="object-contain"
             />
           </div>
           <div>
-            <p className="text-white font-semibold text-sm leading-tight">
-              PVC Invoice
-            </p>
-            <p className="text-slate-400 text-[11px] leading-tight">
+            <p className="text-slate-300 text-sm leading-tight text-center">
               Record System
             </p>
           </div>
@@ -105,7 +131,7 @@ export default function Sidebar() {
         <p className="px-3 mb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
           Menu
         </p>
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const isActive = pathname === item.path;
           return (
             <Link
@@ -139,7 +165,13 @@ export default function Sidebar() {
       <div className="mx-3 mb-4 mt-4 rounded-2xl p-3.5 bg-white/[0.04] border border-white/[0.07]">
         <div className="flex items-center gap-3">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow flex-shrink-0 ${isSuperAdmin ? "bg-amber-500 text-white" : "bg-slate-600 text-slate-200"}`}
+            className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow flex-shrink-0 ${
+              isSuperAdmin
+                ? "bg-amber-500 text-white"
+                : isAdmin
+                  ? "bg-blue-500 text-white"
+                  : "bg-slate-600 text-slate-200"
+            }`}
           >
             {initials}
           </div>
@@ -152,9 +184,15 @@ export default function Sidebar() {
         </div>
         <div className="mt-2.5 flex items-center justify-between">
           <span
-            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${isSuperAdmin ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-slate-600/50 text-slate-400 border border-slate-600"}`}
+            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
+              isSuperAdmin
+                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                : isAdmin
+                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                  : "bg-slate-600/50 text-slate-400 border border-slate-600"
+            }`}
           >
-            {isSuperAdmin ? "Super Admin" : "Admin"}
+            {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Broker"}
           </span>
           <button
             onClick={handleLogout}

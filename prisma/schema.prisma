@@ -14,16 +14,20 @@ model User {
   email                 String          @unique
   passwordHash          String
   role                  Role            @default(ADMIN)
+  linkedBrokerId        Int?            @unique
+  linkedBroker          Broker?         @relation("UserBrokerLink", fields: [linkedBrokerId], references: [id])
   createdAt             DateTime        @default(now())
   updatedAt             DateTime        @updatedAt
   invoices              Invoice[]
   recordsCreated        InvoiceRecord[] @relation("InvoiceRecordCreatedBy")
   recordsUpdated        InvoiceRecord[] @relation("InvoiceRecordUpdatedBy")
+  managedBrokers        Broker[]        @relation("BrokerManagedBy")
 }
 
 enum Role {
   SUPER_ADMIN
   ADMIN
+  BROKER
 }
 
 model Client {
@@ -34,10 +38,15 @@ model Client {
 }
 
 model Broker {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  invoices  Invoice[]
+  id              Int       @id @default(autoincrement())
+  name            String    @unique
+  managedByAdminId Int?
+  managedByAdmin  User?     @relation("BrokerManagedBy", fields: [managedByAdminId], references: [id])
+  linkedUser      User?     @relation("UserBrokerLink")
+  createdAt       DateTime  @default(now())
+  invoices        Invoice[]
+  
+  @@index([managedByAdminId])
 }
 
 model Invoice {

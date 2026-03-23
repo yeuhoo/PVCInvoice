@@ -71,7 +71,7 @@ const PAYMENT_STATUS_STYLES = {
 };
 
 export default function InvoiceRecordPage() {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin, isBroker } = useAuth();
 
   // We source from /api/invoices — every invoice has a `record` field (or null)
   const [invoices, setInvoices] = useState([]);
@@ -236,8 +236,9 @@ export default function InvoiceRecordPage() {
     async (inv) => {
       if (!inv.record) return;
 
-      if (!isSuperAdmin) {
-        alert("Only Super Admin can delete invoices");
+      // Only super admin and admin can delete (brokers cannot)
+      if (!isSuperAdmin && !isAdmin) {
+        alert("You do not have permission to delete invoices");
         return;
       }
 
@@ -1031,7 +1032,7 @@ export default function InvoiceRecordPage() {
                               </svg>
                               Edit
                             </button>
-                            {isSuperAdmin && (
+                            {(isSuperAdmin || isAdmin) && (
                               <button
                                 onClick={() => handleDelete(inv)}
                                 className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"

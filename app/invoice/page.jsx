@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useRouter } from "next/navigation";
 import DashboardLayout from "@/components/DashboardLayout";
 import api from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
@@ -44,7 +45,15 @@ const PAYMENT_STATUS_OPTIONS = [
 ];
 
 export default function InvoicePage() {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin, isBroker } = useAuth();
+  const router = useRouter();
+
+  // Redirect brokers to invoice-record page (they have no access to invoices)
+  useEffect(() => {
+    if (isBroker) {
+      router.replace("/invoice-record");
+    }
+  }, [isBroker, router]);
 
   const [clients, setClients] = useState([]);
   const [brokers, setBrokers] = useState([]);
@@ -59,13 +68,13 @@ export default function InvoicePage() {
       .get("/clients")
       .then((r) => setClients(r.data))
       .catch(console.error);
-    if (isSuperAdmin) {
-      api
-        .get("/brokers")
-        .then((r) => setBrokers(r.data))
-        .catch(console.error);
-    }
-  }, [isSuperAdmin]);
+
+    // Fetch managed brokers (will filter based on role in API)
+    api
+      .get("/api/brokers/managed")
+      .then((r) => setBrokers(r.data))
+      .catch(console.error);
+  }, []);
 
   const handleFormChange = useCallback((e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));

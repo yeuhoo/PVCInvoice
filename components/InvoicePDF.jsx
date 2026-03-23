@@ -1,4 +1,11 @@
-import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
+import {
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+  Image,
+} from "@react-pdf/renderer";
 
 const styles = StyleSheet.create({
   page: {
@@ -21,8 +28,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   logoImage: {
-    width: 100,
-    height: 100,
+    width: 150,
+    height: 150,
     objectFit: "contain",
   },
   logoTextContainer: {
@@ -225,14 +232,7 @@ export const InvoicePDF = ({ invoice }) => {
 
         {/* Logo section */}
         <View style={styles.logoContainer}>
-          <Image
-            src="/images/pvclogo.jpeg"
-            style={styles.logoImage}
-          />
-          <View style={styles.logoTextContainer}>
-            <Text style={styles.logoText}>PVC</Text>
-            <Text style={styles.logoSubtext}>Preventive Virtual Care</Text>
-          </View>
+          <Image src="/images/pvclogo.jpeg" style={styles.logoImage} />
         </View>
 
         {/* Invoice header */}
