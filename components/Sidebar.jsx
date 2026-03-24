@@ -98,74 +98,62 @@ export default function Sidebar() {
   }, [user?.name]);
 
   return (
-    <aside
-      className="w-64 min-h-screen flex flex-col"
+    <header
+      className="w-full flex items-center justify-between px-6 py-3 shadow-lg border-b border-white/5"
       style={{
-        background: "linear-gradient(180deg, #0f172a 0%, #1e293b 100%)",
+        background: "linear-gradient(90deg, #0f172a 0%, #1e293b 100%)",
       }}
     >
-      {/* Brand */}
-      <div className="px-6 pt-7 pb-5">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-20 h-20 flex items-center justify-center overflow-hidden">
+      {/* Left: Logo + Nav */}
+      <div className="flex items-center gap-8">
+        {/* Logo */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 flex items-center justify-center overflow-hidden flex-shrink-0">
             <Image
               src="/images/pvclogo.jpeg"
               alt="PVC Logo"
-              width={80}
-              height={80}
+              width={40}
+              height={40}
               className="object-contain"
             />
           </div>
-          <div>
-            <p className="text-slate-300 text-sm leading-tight text-center">
-              Record System
+          <div className="hidden sm:block">
+            <p className="text-white text-sm font-semibold leading-tight">
+              PVC Record System
             </p>
           </div>
         </div>
+
+        {/* Navigation */}
+        <nav className="flex items-center gap-1">
+          {visibleNavItems.map((item) => {
+            const isActive = pathname === item.path;
+            return (
+              <Link
+                key={item.path}
+                href={item.path}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  isActive
+                    ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
+                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                <span className={isActive ? "text-white" : "text-slate-500"}>
+                  {item.icon}
+                </span>
+                <span className="hidden md:inline">{item.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
-      <div className="mx-5 h-px bg-white/5 mb-4" />
-
-      {/* Nav */}
-      <nav className="flex-1 px-3 space-y-0.5">
-        <p className="px-3 mb-2 text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
-          Menu
-        </p>
-        {visibleNavItems.map((item) => {
-          const isActive = pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              href={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                isActive
-                  ? "bg-blue-600 text-white shadow-md shadow-blue-600/25"
-                  : "text-slate-400 hover:text-white hover:bg-white/5"
-              }`}
-            >
-              <span
-                className={
-                  isActive
-                    ? "text-white"
-                    : "text-slate-500 group-hover:text-slate-300"
-                }
-              >
-                {item.icon}
-              </span>
-              {item.label}
-              {isActive && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-white/60" />
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User card */}
-      <div className="mx-3 mb-4 mt-4 rounded-2xl p-3.5 bg-white/[0.04] border border-white/[0.07]">
-        <div className="flex items-center gap-3">
+      {/* Right: User Info + Role + Logout */}
+      <div className="flex items-center gap-4">
+        {/* User Info */}
+        <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-white/[0.04] border border-white/[0.07]">
           <div
-            className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shadow flex-shrink-0 ${
+            className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shadow flex-shrink-0 ${
               isSuperAdmin
                 ? "bg-amber-500 text-white"
                 : isAdmin
@@ -175,46 +163,50 @@ export default function Sidebar() {
           >
             {initials}
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium truncate leading-tight">
+          <div className="min-w-0">
+            <p className="text-white text-sm font-medium truncate leading-tight max-w-[150px]">
               {user?.name}
             </p>
-            <p className="text-slate-400 text-[11px] truncate">{user?.email}</p>
+            <p className="text-slate-400 text-[11px] truncate max-w-[150px]">
+              {user?.email}
+            </p>
           </div>
         </div>
-        <div className="mt-2.5 flex items-center justify-between">
-          <span
-            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold ${
-              isSuperAdmin
-                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                : isAdmin
-                  ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
-                  : "bg-slate-600/50 text-slate-400 border border-slate-600"
-            }`}
+
+        {/* Role Badge */}
+        <span
+          className={`hidden sm:inline-block text-[10px] px-2.5 py-1 rounded-full font-semibold ${
+            isSuperAdmin
+              ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+              : isAdmin
+                ? "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+                : "bg-slate-600/50 text-slate-400 border border-slate-600"
+          }`}
+        >
+          {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Broker"}
+        </span>
+
+        {/* Logout Button */}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-white/5 transition-all duration-150"
+        >
+          <svg
+            className="w-4 h-4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
           >
-            {isSuperAdmin ? "Super Admin" : isAdmin ? "Admin" : "Broker"}
-          </span>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-red-400 transition-colors"
-          >
-            <svg
-              className="w-3.5 h-3.5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-              />
-            </svg>
-            Logout
-          </button>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+            />
+          </svg>
+          <span className="hidden sm:inline">Logout</span>
+        </button>
       </div>
-    </aside>
+    </header>
   );
 }

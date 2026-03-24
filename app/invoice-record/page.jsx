@@ -151,10 +151,6 @@ export default function InvoiceRecordPage() {
         .length,
       monthly: displayed.filter((inv) => inv.record?.status === "Monthly")
         .length,
-      totalPremium: displayed.reduce(
-        (sum, inv) => sum + parseFloat(inv.premium || 0),
-        0,
-      ),
     };
   }, [displayed]);
 
@@ -362,7 +358,7 @@ export default function InvoiceRecordPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-3">
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200">
@@ -458,35 +454,6 @@ export default function InvoiceRecordPage() {
               </p>
               <p className="text-xs text-slate-500 font-medium">
                 Monthly Billing
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="p-2 bg-white/10 backdrop-blur-sm rounded-xl">
-                  <svg
-                    className="w-5 h-5 text-white"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                </div>
-              </div>
-              <p className="text-2xl font-bold text-white mb-1">
-                $
-                {stats.totalPremium.toLocaleString("en-US", {
-                  minimumFractionDigits: 2,
-                })}
-              </p>
-              <p className="text-xs text-slate-300 font-medium">
-                Total Premium
               </p>
             </div>
           </div>
@@ -691,48 +658,45 @@ export default function InvoiceRecordPage() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="border-b-2 border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100/50">
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Invoice No.
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Client
                   </th>
                   {isSuperAdmin && (
-                    <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                       Broker
                     </th>
                   )}
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Check Date
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Check Date/Payroll
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Payroll No.
+                  <th className="text-center px-2 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Emp.
                   </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Employees
-                  </th>
-                  <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-right px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Premium
                   </th>
-                  <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Total Invoice
+                  <th className="text-right px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Total
                   </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-center px-2 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Billing
                   </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Payment Status
+                  <th className="text-center px-2 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Payment
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Remarks
                   </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Updated By
                   </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                  <th className="text-center px-2 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Actions
                   </th>
                 </tr>
@@ -752,11 +716,11 @@ export default function InvoiceRecordPage() {
                       key={inv.id}
                       className="hover:bg-slate-50/80 transition-all duration-200 group"
                     >
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="p-1.5 bg-blue-50 rounded-lg">
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <div className="p-1 bg-blue-50 rounded">
                             <svg
-                              className="w-4 h-4 text-blue-600"
+                              className="w-3 h-3 text-blue-600"
                               fill="none"
                               stroke="currentColor"
                               strokeWidth={2}
@@ -769,54 +733,51 @@ export default function InvoiceRecordPage() {
                               />
                             </svg>
                           </div>
-                          <span className="font-mono text-sm font-bold text-blue-700">
+                          <span className="font-mono text-xs font-bold text-blue-700">
                             {inv.invoiceNumber}
                           </span>
                         </div>
                       </td>
-                      <td className="px-6 py-5">
-                        <span className="text-sm font-semibold text-slate-800">
+                      <td className="px-3 py-3">
+                        <span className="text-xs font-semibold text-slate-800">
                           {inv.client?.name || "—"}
                         </span>
                       </td>
                       {isSuperAdmin && (
-                        <td className="px-6 py-5">
-                          <span className="text-sm text-slate-600">
+                        <td className="px-3 py-3">
+                          <span className="text-xs text-slate-600">
                             {inv.broker?.name || (
                               <span className="text-slate-300">—</span>
                             )}
                           </span>
                         </td>
                       )}
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <span className="text-sm text-slate-600">
-                          {fmtDate(inv.checkDate)}
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span className="text-xs text-slate-600">
+                          {inv.checkDate
+                            ? fmtDate(inv.checkDate)
+                            : inv.payrollNumber || (
+                                <span className="text-slate-300">—</span>
+                              )}
                         </span>
                       </td>
-                      <td className="px-6 py-5">
-                        <span className="text-sm text-slate-600">
-                          {inv.payrollNumber || (
-                            <span className="text-slate-300">—</span>
-                          )}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-center">
-                        <span className="inline-flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm">
+                      <td className="px-2 py-3 text-center">
+                        <span className="inline-flex items-center justify-center w-8 h-8 bg-slate-100 text-slate-700 rounded-lg font-semibold text-xs">
                           {inv.noOfEmployees ?? "—"}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right whitespace-nowrap">
-                        <span className="text-sm font-semibold text-slate-900">
+                      <td className="px-3 py-3 text-right whitespace-nowrap">
+                        <span className="text-xs font-semibold text-slate-900">
                           ${fmt(inv.premium)}
                         </span>
                       </td>
-                      <td className="px-6 py-5 text-right whitespace-nowrap">
-                        <span className="text-sm font-semibold text-slate-900">
+                      <td className="px-3 py-3 text-right whitespace-nowrap">
+                        <span className="text-xs font-semibold text-slate-900">
                           ${fmt(inv.claimPayment)}
                         </span>
                       </td>
 
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-2 py-3 text-center">
                         {editingId === inv.id ? (
                           <select
                             value={editData.status}
@@ -826,7 +787,7 @@ export default function InvoiceRecordPage() {
                                 status: e.target.value,
                               })
                             }
-                            className="border-2 border-blue-400 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                            className="border-2 border-blue-400 rounded-lg px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
                           >
                             {STATUS_OPTIONS.map((s) => (
                               <option key={s} value={s}>
@@ -836,17 +797,17 @@ export default function InvoiceRecordPage() {
                           </select>
                         ) : (
                           <span
-                            className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold ${STATUS_STYLES[status]}`}
+                            className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[10px] font-bold ${STATUS_STYLES[status]}`}
                           >
                             <span
-                              className={`w-2 h-2 rounded-full ${STATUS_DOT[status]}`}
+                              className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[status]}`}
                             />
                             {status}
                           </span>
                         )}
                       </td>
 
-                      <td className="px-6 py-5 text-center">
+                      <td className="px-2 py-3 text-center">
                         {editingId === inv.id ? (
                           <select
                             value={editData.paymentStatus || ""}
@@ -856,7 +817,7 @@ export default function InvoiceRecordPage() {
                                 paymentStatus: e.target.value || null,
                               })
                             }
-                            className="border-2 border-blue-400 rounded-xl px-3 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm min-w-[200px]"
+                            className="border-2 border-blue-400 rounded-lg px-2 py-1 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm min-w-[140px]"
                           >
                             <option value="">— None —</option>
                             {PAYMENT_STATUS_OPTIONS.map((ps) => (
@@ -867,18 +828,18 @@ export default function InvoiceRecordPage() {
                           </select>
                         ) : paymentStatus ? (
                           <span
-                            className={`inline-flex items-center px-3 py-1.5 rounded-lg text-xs font-bold ${PAYMENT_STATUS_STYLES[paymentStatus]}`}
+                            className={`inline-flex items-center px-2 py-1 rounded-lg text-[10px] font-bold ${PAYMENT_STATUS_STYLES[paymentStatus]}`}
                           >
                             {paymentStatusLabel}
                           </span>
                         ) : (
-                          <span className="text-slate-300 italic text-xs font-medium">
+                          <span className="text-slate-300 italic text-[10px] font-medium">
                             Not set
                           </span>
                         )}
                       </td>
 
-                      <td className="px-6 py-5 max-w-xs">
+                      <td className="px-3 py-3 max-w-[180px]">
                         {editingId === inv.id ? (
                           <input
                             type="text"
@@ -890,14 +851,14 @@ export default function InvoiceRecordPage() {
                               })
                             }
                             placeholder="Add remarks..."
-                            className="w-full border-2 border-blue-400 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
+                            className="w-full border-2 border-blue-400 rounded-lg px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white shadow-sm"
                           />
                         ) : (
                           <span
                             className={
                               remarks
-                                ? "text-sm text-slate-700"
-                                : "text-slate-300 italic text-xs"
+                                ? "text-xs text-slate-700 line-clamp-2"
+                                : "text-slate-300 italic text-[10px]"
                             }
                           >
                             {remarks || "No remarks"}
@@ -905,20 +866,20 @@ export default function InvoiceRecordPage() {
                         )}
                       </td>
 
-                      <td className="px-6 py-5 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-md">
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <div className="flex items-center gap-1.5">
+                          <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-[10px] font-bold shadow-sm">
                             {(inv.record?.updatedBy?.name ||
                               inv.record?.createdBy?.name ||
                               "?")[0]?.toUpperCase()}
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-sm font-semibold text-slate-700">
+                            <span className="text-xs font-semibold text-slate-700">
                               {inv.record?.updatedBy?.name ||
                                 inv.record?.createdBy?.name ||
                                 "—"}
                             </span>
-                            <span className="text-xs text-slate-400">
+                            <span className="text-[10px] text-slate-400">
                               {inv.record?.updatedAt
                                 ? fmtDate(inv.record.updatedAt)
                                 : inv.record?.createdAt
@@ -929,16 +890,16 @@ export default function InvoiceRecordPage() {
                         </div>
                       </td>
 
-                      <td className="px-6 py-5 text-center whitespace-nowrap">
+                      <td className="px-2 py-3 text-center whitespace-nowrap">
                         {editingId === inv.id ? (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => handleSave(inv)}
                               disabled={saving}
-                              className="inline-flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 px-4 py-2.5 rounded-xl transition-all shadow-md hover:shadow-lg disabled:cursor-not-allowed"
+                              className="inline-flex items-center gap-1 text-xs font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:opacity-50 px-2.5 py-1.5 rounded-lg transition-all shadow-sm hover:shadow-md disabled:cursor-not-allowed"
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={2.5}
@@ -954,20 +915,20 @@ export default function InvoiceRecordPage() {
                             </button>
                             <button
                               onClick={() => setEditingId(null)}
-                              className="text-sm font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl transition-all"
+                              className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-2.5 py-1.5 rounded-lg transition-all"
                             >
                               Cancel
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center justify-center gap-2">
+                          <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => handlePreviewPDF(inv)}
                               disabled={generatingPdf}
-                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md disabled:opacity-50"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-purple-600 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 px-2 py-1.5 rounded-lg transition-all shadow-sm hover:shadow disabled:opacity-50"
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={2}
@@ -983,10 +944,10 @@ export default function InvoiceRecordPage() {
                             </button>
                             <button
                               onClick={() => startEdit(inv)}
-                              className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2 py-1.5 rounded-lg transition-all shadow-sm hover:shadow"
                             >
                               <svg
-                                className="w-4 h-4"
+                                className="w-3 h-3"
                                 fill="none"
                                 stroke="currentColor"
                                 strokeWidth={2}
@@ -1003,10 +964,10 @@ export default function InvoiceRecordPage() {
                             {(isSuperAdmin || isAdmin) && (
                               <button
                                 onClick={() => handleDelete(inv)}
-                                className="inline-flex items-center gap-1.5 text-sm font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
+                                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-2 py-1.5 rounded-lg transition-all shadow-sm hover:shadow"
                               >
                                 <svg
-                                  className="w-4 h-4"
+                                  className="w-3 h-3"
                                   fill="none"
                                   stroke="currentColor"
                                   strokeWidth={2}

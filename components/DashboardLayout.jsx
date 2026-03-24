@@ -6,9 +6,9 @@ import Sidebar from "@/components/Sidebar";
 export default function DashboardLayout({ children }) {
   return (
     <PrivateRoute>
-      <div className="flex min-h-screen bg-slate-100">
+      <div className="flex flex-col min-h-screen bg-slate-100">
         <Sidebar />
-        <main className="flex-1 overflow-auto p-8 min-w-0">{children}</main>
+        <main className="flex-1 overflow-auto p-8">{children}</main>
       </div>
     </PrivateRoute>
   );
