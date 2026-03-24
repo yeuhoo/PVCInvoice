@@ -839,7 +839,7 @@ export default function InvoiceRecordPage() {
                     Emp.
                   </th>
                   <th className="text-right px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
-                    Total Invoices
+                    Total Invoice
                   </th>
                   <th className="text-center px-2 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Billing
