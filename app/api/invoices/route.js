@@ -23,7 +23,7 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get("clientId");
-  const limit = parseInt(searchParams.get("limit")) || 100; // Default limit
+  const limit = parseInt(searchParams.get("limit")) || 50; // Reduced default limit for faster loading
   const offset = parseInt(searchParams.get("offset")) || 0;
 
   try {
@@ -102,7 +102,12 @@ export async function GET(request) {
       employeeRate: inv.employeeRate.toString(),
     }));
 
-    return NextResponse.json(result);
+    // Add cache headers for better performance (cache for 30 seconds)
+    return NextResponse.json(result, {
+      headers: {
+        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+      },
+    });
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
@@ -128,15 +133,6 @@ export async function POST(request) {
       paymentStatus,
       remarks,
     } = await request.json();
-
-    console.log("POST /api/invoices - Received data:");
-    console.log("  employeeRate:", employeeRate);
-    console.log("  typeof employeeRate:", typeof employeeRate);
-    console.log("  parseFloat(employeeRate):", parseFloat(employeeRate));
-    console.log(
-      "  parseFloat(employeeRate) || 7.5:",
-      parseFloat(employeeRate) || 7.5,
-    );
 
     if (!clientId) {
       return NextResponse.json(

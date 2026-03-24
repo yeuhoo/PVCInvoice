@@ -113,12 +113,8 @@ export default function InvoiceRecordPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get("/invoices");
-      console.log("fetchInvoices - API response:", res.data);
-      console.log(
-        "fetchInvoices - first invoice employeeRate:",
-        res.data[0]?.employeeRate,
-      );
+      // Fetch with higher limit for better UX - still faster than before due to API optimization
+      const res = await api.get("/invoices?limit=200");
       setInvoices(res.data);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to load records");
@@ -618,16 +614,35 @@ export default function InvoiceRecordPage() {
       {/* Modern Table Container */}
       <div className="bg-white rounded-2xl shadow-xl  border border-slate-200 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-32 gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 border-4 border-slate-200 rounded-full"></div>
-              <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
+          <div className="p-6 space-y-4 animate-pulse">
+            {/* Skeleton Header */}
+            <div className="flex gap-4 mb-6">
+              <div className="h-10 bg-slate-200 rounded-lg w-64"></div>
+              <div className="h-10 bg-slate-200 rounded-lg w-32"></div>
+              <div className="h-10 bg-slate-200 rounded-lg w-32 ml-auto"></div>
             </div>
-            <p className="text-slate-600 font-medium">
+            {/* Skeleton Stats */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-24 bg-slate-100 rounded-xl"></div>
+              ))}
+            </div>
+            {/* Skeleton Table Rows */}
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className="h-16 bg-slate-50 rounded-lg flex items-center gap-4 px-4"
+                >
+                  <div className="h-8 w-24 bg-slate-200 rounded"></div>
+                  <div className="h-8 w-40 bg-slate-200 rounded"></div>
+                  <div className="h-8 w-32 bg-slate-200 rounded"></div>
+                  <div className="h-8 w-20 bg-slate-200 rounded ml-auto"></div>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-slate-500 text-sm mt-8">
               Loading invoice records...
-            </p>
-            <p className="text-slate-400 text-sm">
-              Please wait while we fetch your data
             </p>
           </div>
         ) : displayed.length === 0 ? (

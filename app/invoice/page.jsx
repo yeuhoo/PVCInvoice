@@ -73,7 +73,6 @@ export default function InvoicePage() {
     api
       .get("/brokers")
       .then((r) => {
-        console.log("Fetched brokers:", r.data);
         setBrokers(r.data);
       })
       .catch((err) => {
@@ -172,9 +171,6 @@ export default function InvoicePage() {
           remarks: form.remarks || undefined,
         };
 
-        console.log("Creating invoice with data:", invoiceData);
-        console.log("form.employeeRate value:", form.employeeRate);
-
         await api.post("/invoices", invoiceData);
 
         setShowModal(false);
@@ -197,7 +193,6 @@ export default function InvoicePage() {
 
   const clientOptions = useMemo(() => clients, [clients]);
   const brokerOptions = useMemo(() => {
-    console.log("Broker options calculated:", brokers);
     return brokers;
   }, [brokers]);
 
