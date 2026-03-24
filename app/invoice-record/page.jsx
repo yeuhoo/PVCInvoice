@@ -81,6 +81,7 @@ export default function InvoiceRecordPage() {
   const [filterStatus, setFilterStatus] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [dateFilter, setDateFilter] = useState(""); // Date range filter
 
   const [editingId, setEditingId] = useState(null); // invoice.id
   const [editData, setEditData] = useState({
@@ -108,6 +109,64 @@ export default function InvoiceRecordPage() {
     fetchInvoices();
   }, []);
 
+  // Generate date range options based on billing type
+  const getDateRangeOptions = useCallback(() => {
+    const now = new Date();
+    const options = [];
+
+    if (filterStatus === "Weekly") {
+      // Generate weekly ranges for past 8 weeks
+      for (let i = 0; i < 8; i++) {
+        const endDate = new Date(now);
+        endDate.setDate(now.getDate() - i * 7);
+        const startDate = new Date(endDate);
+        startDate.setDate(endDate.getDate() - 6);
+
+        options.push({
+          value: `${startDate.toISOString().split("T")[0]}_${endDate.toISOString().split("T")[0]}`,
+          label: `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+        });
+      }
+    } else if (filterStatus === "Biweekly") {
+      // Generate biweekly ranges for past 8 periods (16 weeks)
+      for (let i = 0; i < 8; i++) {
+        const endDate = new Date(now);
+        endDate.setDate(now.getDate() - i * 14);
+        const startDate = new Date(endDate);
+        startDate.setDate(endDate.getDate() - 13);
+
+        options.push({
+          value: `${startDate.toISOString().split("T")[0]}_${endDate.toISOString().split("T")[0]}`,
+          label: `${startDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })} - ${endDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`,
+        });
+      }
+    } else if (filterStatus === "Monthly") {
+      // Generate monthly ranges for past 12 months
+      for (let i = 0; i < 12; i++) {
+        const year = now.getFullYear();
+        const month = now.getMonth() - i;
+        const date = new Date(year, month, 1);
+        const startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+        const endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        options.push({
+          value: `${startDate.toISOString().split("T")[0]}_${endDate.toISOString().split("T")[0]}`,
+          label: startDate.toLocaleDateString("en-US", {
+            month: "long",
+            year: "numeric",
+          }),
+        });
+      }
+    }
+
+    return options;
+  }, [filterStatus]);
+
+  // Reset date filter when billing status changes
+  useEffect(() => {
+    setDateFilter("");
+  }, [filterStatus]);
+
   // Optimized: Use useCallback to prevent unnecessary re-renders
   const fetchInvoices = useCallback(async () => {
     setLoading(true);
@@ -134,9 +193,30 @@ export default function InvoiceRecordPage() {
         inv.client?.name?.toLowerCase().includes(debouncedSearch.toLowerCase());
       const recordStatus = inv.record?.status || "Weekly";
       const matchStatus = !filterStatus || recordStatus === filterStatus;
-      return matchSearch && matchStatus;
+
+      // Date range filter
+      let matchDate = true;
+      if (dateFilter) {
+        const [startStr, endStr] = dateFilter.split("_");
+        const startDate = new Date(startStr);
+        const endDate = new Date(endStr);
+        endDate.setHours(23, 59, 59, 999); // Include full end date
+
+        const invDate = inv.checkDate
+          ? new Date(inv.checkDate)
+          : inv.createdAt
+            ? new Date(inv.createdAt)
+            : null;
+        if (invDate) {
+          matchDate = invDate >= startDate && invDate <= endDate;
+        } else {
+          matchDate = false;
+        }
+      }
+
+      return matchSearch && matchStatus && matchDate;
     });
-  }, [invoices, debouncedSearch, filterStatus]);
+  }, [invoices, debouncedSearch, filterStatus, dateFilter]);
 
   // Optimized: Memoize stats calculations to avoid recalculating on every render
   const stats = useMemo(() => {
@@ -545,11 +625,45 @@ export default function InvoiceRecordPage() {
               </select>
             </div>
 
-            {(filterStatus || searchQuery) && (
+            {/* Calendar Filter - Shows when billing status is selected */}
+            {filterStatus && (
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-slate-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+                <select
+                  value={dateFilter}
+                  onChange={(e) => setDateFilter(e.target.value)}
+                  className="pl-12 pr-10 py-3 border border-slate-300 rounded-xl text-sm bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white focus:border-blue-500 transition-all appearance-none cursor-pointer min-w-[220px]"
+                >
+                  <option value="">All {filterStatus} Periods</option>
+                  {getDateRangeOptions().map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {(filterStatus || searchQuery || dateFilter) && (
               <button
                 onClick={() => {
                   setFilterStatus("");
                   setSearchQuery("");
+                  setDateFilter("");
                 }}
                 className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-slate-600 bg-slate-100 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all"
               >
