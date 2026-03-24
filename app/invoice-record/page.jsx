@@ -819,6 +819,9 @@ export default function InvoiceRecordPage() {
               <thead>
                 <tr className="border-b-2 border-slate-100 bg-gradient-to-r from-slate-50 to-slate-100/50">
                   <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
+                    Date Created
+                  </th>
+                  <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
                     Invoice No.
                   </th>
                   <th className="text-left px-3 py-2.5 text-[10px] font-bold text-slate-600 uppercase tracking-wide">
@@ -870,6 +873,11 @@ export default function InvoiceRecordPage() {
                       key={inv.id}
                       className="hover:bg-slate-50/80 transition-all duration-200 group"
                     >
+                      <td className="px-3 py-3 whitespace-nowrap">
+                        <span className="text-xs text-slate-600">
+                          {fmtDate(inv.createdAt)}
+                        </span>
+                      </td>
                       <td className="px-3 py-3 whitespace-nowrap">
                         <div className="flex items-center gap-1.5">
                           <div className="p-1 bg-blue-50 rounded">
