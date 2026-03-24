@@ -69,11 +69,16 @@ export default function InvoicePage() {
       .then((r) => setClients(r.data))
       .catch(console.error);
 
-    // Fetch managed brokers (will filter based on role in API)
+    // Fetch brokers (accessible to SUPER_ADMIN and ADMIN)
     api
-      .get("/api/brokers/managed")
-      .then((r) => setBrokers(r.data))
-      .catch(console.error);
+      .get("/brokers")
+      .then((r) => {
+        console.log("Fetched brokers:", r.data);
+        setBrokers(r.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching brokers:", err);
+      });
   }, []);
 
   const handleFormChange = useCallback((e) => {
@@ -127,9 +132,13 @@ export default function InvoicePage() {
           setClients(updatedClients.data);
         }
 
-        // Find or create broker (if provided and super admin)
+        // Find or create broker (if provided and super admin or admin)
         let brokerId = undefined;
-        if (isSuperAdmin && form.brokerName && form.brokerName.trim()) {
+        if (
+          (isSuperAdmin || isAdmin) &&
+          form.brokerName &&
+          form.brokerName.trim()
+        ) {
           const existingBroker = brokers.find(
             (b) =>
               b.name.toLowerCase() === form.brokerName.trim().toLowerCase(),
@@ -183,11 +192,14 @@ export default function InvoicePage() {
         setSubmitting(false);
       }
     },
-    [clients, brokers, form, isSuperAdmin],
+    [clients, brokers, form, isSuperAdmin, isAdmin],
   );
 
   const clientOptions = useMemo(() => clients, [clients]);
-  const brokerOptions = useMemo(() => brokers, [brokers]);
+  const brokerOptions = useMemo(() => {
+    console.log("Broker options calculated:", brokers);
+    return brokers;
+  }, [brokers]);
 
   return (
     <DashboardLayout>
@@ -257,8 +269,8 @@ export default function InvoicePage() {
                   </datalist>
                 </div>
 
-                {/* Broker - super admin only */}
-                {isSuperAdmin && (
+                {/* Broker - super admin and admin */}
+                {(isSuperAdmin || isAdmin) && (
                   <div className="col-span-2">
                     <label className="block text-xs font-medium text-slate-600 mb-1">
                       Broker

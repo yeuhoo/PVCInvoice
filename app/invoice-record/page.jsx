@@ -711,17 +711,14 @@ export default function InvoiceRecordPage() {
                   <th className="text-left px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Payroll No.
                   </th>
+                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
+                    Employees
+                  </th>
                   <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Premium
                   </th>
                   <th className="text-right px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Claim Payment
-                  </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Employees
-                  </th>
-                  <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
-                    Rate
+                    Total Invoice
                   </th>
                   <th className="text-center px-6 py-4 text-xs font-bold text-slate-600 uppercase tracking-wider">
                     Billing
@@ -803,6 +800,11 @@ export default function InvoiceRecordPage() {
                           )}
                         </span>
                       </td>
+                      <td className="px-6 py-5 text-center">
+                        <span className="inline-flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm">
+                          {inv.noOfEmployees ?? "—"}
+                        </span>
+                      </td>
                       <td className="px-6 py-5 text-right whitespace-nowrap">
                         <span className="text-sm font-semibold text-slate-900">
                           ${fmt(inv.premium)}
@@ -812,40 +814,6 @@ export default function InvoiceRecordPage() {
                         <span className="text-sm font-semibold text-slate-900">
                           ${fmt(inv.claimPayment)}
                         </span>
-                      </td>
-                      <td className="px-6 py-5 text-center">
-                        <span className="inline-flex items-center justify-center w-10 h-10 bg-slate-100 text-slate-700 rounded-xl font-semibold text-sm">
-                          {inv.noOfEmployees ?? "—"}
-                        </span>
-                      </td>
-
-                      {/* Employee Rate - only visible for Weekly/Biweekly */}
-                      <td className="px-6 py-5 text-center">
-                        {inv.record?.status === "Weekly" ||
-                        inv.record?.status === "Biweekly" ? (
-                          editingId === inv.id ? (
-                            <input
-                              type="number"
-                              value={editData.employeeRate || ""}
-                              onChange={(e) =>
-                                setEditData({
-                                  ...editData,
-                                  employeeRate: e.target.value,
-                                })
-                              }
-                              min="0"
-                              step="0.01"
-                              placeholder="7.50"
-                              className="w-20 border-2 border-blue-400 rounded-lg px-2 py-1 text-sm text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                          ) : (
-                            <span className="text-sm font-semibold text-slate-900">
-                              ${fmt(inv.employeeRate || "0")}
-                            </span>
-                          )
-                        ) : (
-                          <span className="text-slate-300">—</span>
-                        )}
                       </td>
 
                       <td className="px-6 py-5 text-center">
@@ -992,7 +960,7 @@ export default function InvoiceRecordPage() {
                             </button>
                           </div>
                         ) : (
-                          <div className="opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition-all duration-200">
+                          <div className="flex items-center justify-center gap-2">
                             <button
                               onClick={() => handlePreviewPDF(inv)}
                               disabled={generatingPdf}

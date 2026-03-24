@@ -2,11 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken, requireRole } from "@/lib/auth";
 
-// GET /api/brokers - super admin only
+// GET /api/brokers - super admin and admin
 export async function GET(request) {
   const { user, error } = verifyToken(request);
   if (error) return error;
-  const roleError = requireRole(user, "SUPER_ADMIN");
+  const roleError = requireRole(user, "SUPER_ADMIN", "ADMIN");
   if (roleError) return roleError;
 
   try {
@@ -22,11 +22,11 @@ export async function GET(request) {
   }
 }
 
-// POST /api/brokers - super admin only
+// POST /api/brokers - super admin and admin
 export async function POST(request) {
   const { user, error } = verifyToken(request);
   if (error) return error;
-  const roleError = requireRole(user, "SUPER_ADMIN");
+  const roleError = requireRole(user, "SUPER_ADMIN", "ADMIN");
   if (roleError) return roleError;
 
   try {
