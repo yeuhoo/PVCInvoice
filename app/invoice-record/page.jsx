@@ -147,6 +147,10 @@ export default function InvoiceRecordPage() {
         .length,
       monthly: displayed.filter((inv) => inv.record?.status === "Monthly")
         .length,
+      grandTotal: displayed.reduce(
+        (sum, inv) => sum + parseFloat(inv.premium || 0),
+        0,
+      ),
     };
   }, [displayed]);
 
@@ -354,7 +358,7 @@ export default function InvoiceRecordPage() {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
               <div className="flex items-center justify-between mb-3">
                 <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg shadow-blue-200">
@@ -451,6 +455,30 @@ export default function InvoiceRecordPage() {
               <p className="text-xs text-slate-500 font-medium">
                 Monthly Billing
               </p>
+            </div>
+
+            <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5">
+              <div className="flex items-center justify-between mb-3">
+                <div className="p-2 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl shadow-lg shadow-slate-300">
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-2xl font-bold text-slate-900 mb-1">
+                ${fmt(stats.grandTotal)}
+              </p>
+              <p className="text-xs text-slate-500 font-medium">Grand Total</p>
             </div>
           </div>
         </div>
