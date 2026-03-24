@@ -1,164 +1,165 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Loader2, AlertCircle } from "lucide-react";
+import Image from "next/image";
+
+const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
-
-  const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = useCallback((e) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  }, []);
-
-  const handleSubmit = useCallback(
-    async (e) => {
-      e.preventDefault();
-      setError("");
-      setLoading(true);
-      try {
-        const res = await api.post("/auth/login", form);
-        login(res.data.user, res.data.token);
-        router.replace("/invoice");
-      } catch (err) {
-        setError(
-          err.response?.data?.message || "Login failed. Please try again.",
-        );
-      } finally {
-        setLoading(false);
-      }
+  const form = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
     },
-    [form, login, router],
-  );
+  });
+
+  async function onSubmit(values) {
+    setError("");
+    setIsLoading(true);
+    try {
+      const res = await api.post("/auth/login", values);
+      login(res.data.user, res.data.token);
+      router.replace("/invoice");
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Login failed. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-slate-950 flex items-center justify-center p-6">
-      {/* Background glow */}
+    <div className="min-h-screen flex items-center justify-center p-4 bg-linear-to-br from-slate-50 via-blue-50 to-slate-100">
+      {/* Background decorative elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px  ] bg-blue-600/8 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-slate-200/30 rounded-full blur-3xl" />
       </div>
 
-      {/* Card */}
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-10">
-        {/* Logo + Header */}
-        <div className="flex flex-col items-center text-center mb-10">
-          <div className="flex w-14 h-14 rounded-xl bg-blue-600 items-center justify-center mb-5 shadow-lg shadow-blue-600/25">
-            <svg
-              className="w-7 h-7 text-white"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2}
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+      <Card className="w-full max-w-md relative z-10 shadow-xl">
+        <CardHeader className="space-y-4 text-center pb-4">
+          <div className="flex justify-center mb-2">
+            <div className="relative w-32 h-32 rounded-lg overflow-hidden bg-white shadow-md">
+              <Image
+                src="/images/pvclogo.jpeg"
+                alt="PVC Logo"
+                fill
+                className="object-contain p-2"
+                priority
               />
-            </svg>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">
-            PVC Invoice
-          </h1>
-          <p className="text-slate-400 text-sm mt-2">Sign in to your account</p>
-        </div>
+          <div className="space-y-2">
+            <CardTitle className="text-2xl font-bold">Welcome Back</CardTitle>
+            <CardDescription>
+              Sign in to PVC Invoice Record System
+            </CardDescription>
+          </div>
+        </CardHeader>
 
-        {/* Error */}
-        {error && (
-          <div className="mb-6 flex items-center gap-2.5 px-4 py-3.5 bg-red-500/10 text-red-400 text-sm rounded-xl border border-red-500/20">
-            <svg
-              className="w-4 h-4 flex-shrink-0"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
+        <CardContent>
+          {error && (
+            <div className="mb-6 flex items-start gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
+              <p className="text-sm text-destructive">{error}</p>
+            </div>
+          )}
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="admin@example.com"
+                        type="email"
+                        autoComplete="email"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </svg>
-            {error}
-          </div>
-        )}
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2.5">
-              Email address
-            </label>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={handleChange}
-              required
-              placeholder="you@example.com"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
-            />
-          </div>
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="••••••••"
+                        type="password"
+                        autoComplete="current-password"
+                        disabled={isLoading}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2.5">
-              Password
-            </label>
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              required
-              placeholder="••••••••"
-              className="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-colors"
-            />
-          </div>
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  "Sign in"
+                )}
+              </Button>
+            </form>
+          </Form>
 
-          <div className="pt-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-500 active:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-xl text-sm shadow-lg shadow-blue-600/25 transition-all"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="w-4 h-4 animate-spin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8H4z"
-                    />
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                "Sign in"
-              )}
-            </button>
-          </div>
-        </form>
-
-        <p className="text-center text-xs text-slate-600 mt-8">
-          PVC Invoice Record System &copy; {new Date().getFullYear()}
-        </p>
-      </div>
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            PVC Invoice Record System © {new Date().getFullYear()}
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
