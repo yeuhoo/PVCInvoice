@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken, requireRole } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/brokers - super admin and admin
 export async function GET(request) {
   const { user, error } = verifyToken(request);
@@ -11,11 +13,7 @@ export async function GET(request) {
 
   try {
     const brokers = await prisma.broker.findMany({ orderBy: { name: "asc" } });
-    return NextResponse.json(brokers, {
-      headers: {
-        "Cache-Control": "private, max-age=60, stale-while-revalidate=120",
-      },
-    });
+    return NextResponse.json(brokers);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });

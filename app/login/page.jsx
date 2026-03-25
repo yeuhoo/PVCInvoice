@@ -53,7 +53,9 @@ export default function LoginPage() {
     try {
       const res = await api.post("/auth/login", values);
       login(res.data.user, res.data.token);
-      router.replace("/invoice");
+      router.replace(
+        res.data.user.role === "BROKER" ? "/invoice-record" : "/invoice",
+      );
     } catch (err) {
       setError(
         err.response?.data?.message || "Login failed. Please try again.",

@@ -68,12 +68,12 @@ export async function POST(request) {
       );
     }
 
-    // Validate broker role requirements
-    if (role === "BROKER" && !linkedBrokerId) {
-      return NextResponse.json(
-        { message: "Broker users must be linked to a broker" },
-        { status: 400 },
-      );
+    // Validate broker role requirements - auto-create broker entity if not provided
+    let resolvedBrokerId = linkedBrokerId ? parseInt(linkedBrokerId) : null;
+    if (role === "BROKER" && !resolvedBrokerId) {
+      // Auto-create a broker entity with the user's name
+      const newBroker = await prisma.broker.create({ data: { name } });
+      resolvedBrokerId = newBroker.id;
     }
 
     // Check if user already exists
@@ -86,9 +86,9 @@ export async function POST(request) {
     }
 
     // If linking to broker, check if broker already has a user
-    if (linkedBrokerId) {
+    if (resolvedBrokerId) {
       const brokerUser = await prisma.user.findFirst({
-        where: { linkedBrokerId: parseInt(linkedBrokerId) },
+        where: { linkedBrokerId: resolvedBrokerId },
       });
       if (brokerUser) {
         return NextResponse.json(
@@ -108,7 +108,7 @@ export async function POST(request) {
         email,
         passwordHash,
         role: role || "ADMIN",
-        linkedBrokerId: linkedBrokerId ? parseInt(linkedBrokerId) : null,
+        linkedBrokerId: resolvedBrokerId,
       },
       select: {
         id: true,

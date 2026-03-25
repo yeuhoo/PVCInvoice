@@ -16,11 +16,6 @@ export async function GET(request) {
   const isAdmin = user.role === "ADMIN";
   const isBroker = user.role === "BROKER";
 
-  // Brokers should not access invoices API
-  if (isBroker) {
-    return NextResponse.json({ message: "Access denied" }, { status: 403 });
-  }
-
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get("clientId");
   const limit = parseInt(searchParams.get("limit")) || 50; // Reduced default limit for faster loading
@@ -30,7 +25,17 @@ export async function GET(request) {
     const where = {};
     if (clientId) where.clientId = parseInt(clientId);
 
-    // Admin and Super Admin see all invoices, Broker is denied access above
+    // Brokers can only see invoices assigned to their linked broker
+    if (isBroker) {
+      const brokerUser = await prisma.user.findUnique({
+        where: { id: user.userId },
+        select: { linkedBrokerId: true },
+      });
+      if (!brokerUser?.linkedBrokerId) {
+        return NextResponse.json([]);
+      }
+      where.brokerId = brokerUser.linkedBrokerId;
+    }
 
     // Optimized: Use select to only fetch needed fields
     const invoices = await prisma.invoice.findMany({
@@ -102,12 +107,7 @@ export async function GET(request) {
       employeeRate: inv.employeeRate.toString(),
     }));
 
-    // Add cache headers for better performance (cache for 30 seconds)
-    return NextResponse.json(result, {
-      headers: {
-        "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
-      },
-    });
+    return NextResponse.json(result);
   } catch (err) {
     console.error(err);
     return NextResponse.json({ message: "Server error" }, { status: 500 });
@@ -141,6 +141,12 @@ export async function POST(request) {
       );
     }
 
+    console.log("Invoice POST received:", {
+      clientId,
+      brokerId,
+      billingStatus,
+    });
+
     let invoiceNumber;
     let unique = false;
 
@@ -152,11 +158,20 @@ export async function POST(request) {
       if (!existingInv) unique = true;
     }
 
+    // Validate brokerId exists if provided
+    let resolvedBrokerId = null;
+    if (brokerId) {
+      const brokerExists = await prisma.broker.findUnique({
+        where: { id: parseInt(brokerId) },
+      });
+      resolvedBrokerId = brokerExists ? parseInt(brokerId) : null;
+    }
+
     const invoice = await prisma.invoice.create({
       data: {
         invoiceNumber,
         clientId: parseInt(clientId),
-        brokerId: brokerId ? parseInt(brokerId) : null,
+        brokerId: resolvedBrokerId,
         checkDate: checkDate ? new Date(checkDate) : null,
         payrollNumber: payrollNumber || null,
         premium: parseFloat(premium) || 0,
@@ -190,7 +205,10 @@ export async function POST(request) {
       { status: 201 },
     );
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ message: "Server error" }, { status: 500 });
+    console.error("Invoice POST error:", err);
+    return NextResponse.json(
+      { message: err.message || "Server error" },
+      { status: 500 },
+    );
   }
 }

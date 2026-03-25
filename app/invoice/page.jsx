@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 
 const EMPTY_FORM = {
   clientName: "",
-  brokerName: "",
+  brokerId: "",
   checkDate: "",
   payrollNumber: "",
   premium: "",
@@ -57,6 +57,7 @@ export default function InvoicePage() {
 
   const [clients, setClients] = useState([]);
   const [brokers, setBrokers] = useState([]);
+  const [brokersLoading, setBrokersLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [submitting, setSubmitting] = useState(false);
@@ -68,16 +69,17 @@ export default function InvoicePage() {
       .get("/clients")
       .then((r) => setClients(r.data))
       .catch(console.error);
+  }, []);
 
-    // Fetch brokers (accessible to SUPER_ADMIN and ADMIN)
+  const openModal = useCallback(() => {
+    setShowModal(true);
+    setBrokers([]);
+    setBrokersLoading(true);
     api
       .get("/brokers")
-      .then((r) => {
-        setBrokers(r.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching brokers:", err);
-      });
+      .then((r) => setBrokers(r.data))
+      .catch(console.error)
+      .finally(() => setBrokersLoading(false));
   }, []);
 
   const handleFormChange = useCallback((e) => {
@@ -131,29 +133,10 @@ export default function InvoicePage() {
           setClients(updatedClients.data);
         }
 
-        // Find or create broker (if provided and super admin or admin)
+        // Use selected broker id directly
         let brokerId = undefined;
-        if (
-          (isSuperAdmin || isAdmin) &&
-          form.brokerName &&
-          form.brokerName.trim()
-        ) {
-          const existingBroker = brokers.find(
-            (b) =>
-              b.name.toLowerCase() === form.brokerName.trim().toLowerCase(),
-          );
-          if (existingBroker) {
-            brokerId = existingBroker.id;
-          } else {
-            // Create new broker
-            const brokerRes = await api.post("/brokers", {
-              name: form.brokerName.trim(),
-            });
-            brokerId = brokerRes.data.id;
-            // Refresh brokers list
-            const updatedBrokers = await api.get("/brokers");
-            setBrokers(updatedBrokers.data);
-          }
+        if ((isSuperAdmin || isAdmin) && form.brokerId) {
+          brokerId = parseInt(form.brokerId);
         }
 
         // Create the invoice (invoice record is auto-created by the backend)
@@ -192,15 +175,12 @@ export default function InvoicePage() {
   );
 
   const clientOptions = useMemo(() => clients, [clients]);
-  const brokerOptions = useMemo(() => {
-    return brokers;
-  }, [brokers]);
 
   return (
     <DashboardLayout>
       <div className="flex items-center justify-center min-h-[60vh]">
         <button
-          onClick={() => setShowModal(true)}
+          onClick={openModal}
           className="inline-flex items-center gap-4 bg-blue-600 hover:bg-blue-700 text-white text-2xl font-semibold px-12 py-8 rounded-2xl shadow-xl shadow-blue-600/30 transition-all hover:scale-105"
         >
           <svg
@@ -270,20 +250,22 @@ export default function InvoicePage() {
                     <label className="block text-xs font-medium text-slate-600 mb-1">
                       Broker
                     </label>
-                    <input
-                      type="text"
-                      name="brokerName"
-                      value={form.brokerName}
+                    <select
+                      name="brokerId"
+                      value={form.brokerId}
                       onChange={handleFormChange}
-                      list="brokers-list"
-                      placeholder="Type or select broker name..."
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <datalist id="brokers-list">
-                      {brokerOptions.map((b) => (
-                        <option key={b.id} value={b.name} />
+                      disabled={brokersLoading}
+                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      <option value="">
+                        {brokersLoading ? "Loading..." : "— None —"}
+                      </option>
+                      {brokers.map((b) => (
+                        <option key={b.id} value={b.id}>
+                          {b.name}
+                        </option>
                       ))}
-                    </datalist>
+                    </select>
                   </div>
                 )}
 
