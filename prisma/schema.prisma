@@ -31,10 +31,17 @@ enum Role {
 }
 
 model Client {
-  id        Int       @id @default(autoincrement())
-  name      String    @unique
-  createdAt DateTime  @default(now())
-  invoices  Invoice[]
+  id             Int       @id @default(autoincrement())
+  name           String    @unique
+  companyCode    String?
+  ownerName      String?
+  adminName      String?
+  email          String?
+  phone          String?
+  payrollCompany String?
+  deductionDay   String?
+  createdAt      DateTime  @default(now())
+  invoices       Invoice[]
 }
 
 model Broker {

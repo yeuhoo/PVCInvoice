@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyToken, requireRole } from "@/lib/auth";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/clients
 export async function GET(request) {
   const { user, error } = verifyToken(request);
@@ -26,14 +28,34 @@ export async function POST(request) {
   if (error) return error;
 
   try {
-    const { name } = await request.json();
+    const {
+      name,
+      companyCode,
+      ownerName,
+      adminName,
+      email,
+      phone,
+      payrollCompany,
+      deductionDay,
+    } = await request.json();
     if (!name)
       return NextResponse.json(
         { message: "Name is required" },
         { status: 400 },
       );
 
-    const client = await prisma.client.create({ data: { name } });
+    const client = await prisma.client.create({
+      data: {
+        name,
+        companyCode,
+        ownerName,
+        adminName,
+        email,
+        phone,
+        payrollCompany,
+        deductionDay,
+      },
+    });
     return NextResponse.json(client, { status: 201 });
   } catch (err) {
     if (err.code === "P2002")

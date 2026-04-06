@@ -227,10 +227,15 @@ export default function InvoiceRecordPage() {
         .length,
       monthly: displayed.filter((inv) => inv.record?.status === "Monthly")
         .length,
-      grandTotal: displayed.reduce(
-        (sum, inv) => sum + parseFloat(inv.premium || 0),
-        0,
-      ),
+      grandTotal: displayed.reduce((sum, inv) => {
+        const premium = parseFloat(inv.premium || 0);
+        const claimPayment = parseFloat(inv.claimPayment || 0);
+        const noOfEmployees = parseInt(inv.noOfEmployees || 0);
+        const employeeRate = parseFloat(inv.employeeRate || 7.5);
+        const totalInvoice =
+          premium - claimPayment + noOfEmployees * employeeRate;
+        return sum + totalInvoice;
+      }, 0),
     };
   }, [displayed]);
 
@@ -930,7 +935,13 @@ export default function InvoiceRecordPage() {
                       </td>
                       <td className="px-3 py-3 text-right whitespace-nowrap">
                         <span className="text-xs font-semibold text-slate-900">
-                          ${fmt(inv.claimPayment)}
+                          $
+                          {fmt(
+                            parseFloat(inv.premium || 0) -
+                              parseFloat(inv.claimPayment || 0) +
+                              parseInt(inv.noOfEmployees || 0) *
+                                parseFloat(inv.employeeRate || 7.5),
+                          )}
                         </span>
                       </td>
 

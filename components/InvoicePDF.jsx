@@ -232,7 +232,11 @@ export const InvoicePDF = ({ invoice }) => {
 
         {/* Logo section */}
         <View style={styles.logoContainer}>
-          <Image src="/images/pvclogo.jpeg" style={styles.logoImage} />
+          <View style={{ alignItems: "flex-start", width: "100%" }}>
+            <Image src="/images/pvclogo.jpeg" style={styles.logoImage} />
+            <Text style={styles.logoSubtext}>9 Cucolo Lane</Text>
+            <Text style={styles.logoSubtext}>Monsey, NY 10952</Text>
+          </View>
         </View>
 
         {/* Invoice header */}

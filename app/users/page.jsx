@@ -25,6 +25,7 @@ export default function UsersPage() {
   }, [isSuperAdmin, router]);
 
   const [users, setUsers] = useState([]);
+  const [clients, setClients] = useState([]);
   const [formData, setFormData] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -34,6 +35,7 @@ export default function UsersPage() {
   useEffect(() => {
     if (isSuperAdmin) {
       fetchUsers();
+      fetchClients();
     }
   }, [isSuperAdmin]);
 
@@ -43,6 +45,15 @@ export default function UsersPage() {
       setUsers(response.data);
     } catch (err) {
       console.error("Error fetching users:", err);
+    }
+  };
+
+  const fetchClients = async () => {
+    try {
+      const response = await api.get("/clients");
+      setClients(response.data);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
     }
   };
 
@@ -194,7 +205,7 @@ export default function UsersPage() {
         </div>
 
         {/* Users List */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div className="p-6 border-b border-slate-200">
             <h2 className="text-xl font-semibold text-slate-800">
               Existing Users ({users.length})
@@ -257,6 +268,90 @@ export default function UsersPage() {
                       </td>
                       <td className="px-6 py-4 text-sm text-slate-600">
                         {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        {/* Clients List */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="p-6 border-b border-slate-200">
+            <h2 className="text-xl font-semibold text-slate-800">
+              Existing Clients ({clients.length})
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="bg-slate-50 border-b border-slate-200">
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Company Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Company Code
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Owner
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Admin
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Email
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Phone
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Payroll Co.
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                    Deduction Day
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {clients.length === 0 ? (
+                  <tr>
+                    <td
+                      colSpan="8"
+                      className="px-6 py-8 text-center text-slate-500"
+                    >
+                      No clients found
+                    </td>
+                  </tr>
+                ) : (
+                  clients.map((client) => (
+                    <tr
+                      key={client.id}
+                      className="hover:bg-slate-50 transition"
+                    >
+                      <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                        {client.name}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.companyCode || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.ownerName || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.adminName || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.email || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.phone || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.payrollCompany || "—"}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        {client.deductionDay || "—"}
                       </td>
                     </tr>
                   ))

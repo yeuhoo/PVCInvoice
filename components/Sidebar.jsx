@@ -8,6 +8,26 @@ import { useMemo, useCallback } from "react";
 
 const navItems = [
   {
+    label: "Add Client",
+    path: "/add-client",
+    roles: ["SUPER_ADMIN"],
+    icon: (
+      <svg
+        className="w-[18px] h-[18px]"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.8}
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 4.5v15m7.5-7.5h-15"
+        />
+      </svg>
+    ),
+  },
+  {
     label: "Invoice",
     path: "/invoice",
     roles: ["SUPER_ADMIN", "ADMIN"], // Only super admin and admin

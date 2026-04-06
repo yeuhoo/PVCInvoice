@@ -64,6 +64,14 @@ export default function InvoicePage() {
   const [formError, setFormError] = useState("");
   const [paymentType, setPaymentType] = useState("checkDate"); // "checkDate" or "payrollNumber"
 
+  // Combobox state for client
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientDropdownOpen, setClientDropdownOpen] = useState(false);
+
+  // Combobox state for broker
+  const [brokerSearch, setBrokerSearch] = useState("");
+  const [brokerDropdownOpen, setBrokerDropdownOpen] = useState(false);
+
   useEffect(() => {
     api
       .get("/clients")
@@ -73,6 +81,11 @@ export default function InvoicePage() {
 
   const openModal = useCallback(() => {
     setShowModal(true);
+    // Refresh clients so newly added ones appear immediately
+    api
+      .get("/clients")
+      .then((r) => setClients(r.data))
+      .catch(console.error);
     setBrokers([]);
     setBrokersLoading(true);
     api
@@ -91,6 +104,10 @@ export default function InvoicePage() {
     setFormError("");
     setForm(EMPTY_FORM);
     setPaymentType("checkDate");
+    setClientSearch("");
+    setBrokerSearch("");
+    setClientDropdownOpen(false);
+    setBrokerDropdownOpen(false);
   }, []);
 
   const handlePaymentTypeChange = useCallback((value) => {
@@ -223,25 +240,65 @@ export default function InvoicePage() {
             <form onSubmit={handleCreate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {/* Client */}
-                <div className="col-span-2">
+                <div className="col-span-2 relative">
                   <label className="block text-xs font-medium text-slate-600 mb-1">
                     Client <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
-                    name="clientName"
-                    value={form.clientName}
-                    onChange={handleFormChange}
-                    list="clients-list"
-                    required
-                    placeholder="Type or select client name..."
+                    value={clientSearch || form.clientName}
+                    onChange={(e) => {
+                      setClientSearch(e.target.value);
+                      setForm((prev) => ({ ...prev, clientName: "" }));
+                      setClientDropdownOpen(true);
+                    }}
+                    onFocus={() => setClientDropdownOpen(true)}
+                    onBlur={() =>
+                      setTimeout(() => setClientDropdownOpen(false), 150)
+                    }
+                    placeholder="Search client..."
                     className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
-                  <datalist id="clients-list">
-                    {clientOptions.map((c) => (
-                      <option key={c.id} value={c.name} />
-                    ))}
-                  </datalist>
+                  {clientDropdownOpen && (
+                    <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                      {clientOptions
+                        .filter((c) =>
+                          c.name
+                            .toLowerCase()
+                            .includes((clientSearch || "").toLowerCase()),
+                        )
+                        .map((c) => (
+                          <li
+                            key={c.id}
+                            onMouseDown={() => {
+                              setForm((prev) => ({
+                                ...prev,
+                                clientName: c.name,
+                              }));
+                              setClientSearch("");
+                              setClientDropdownOpen(false);
+                            }}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-700"
+                          >
+                            {c.name}
+                          </li>
+                        ))}
+                      {clientOptions.filter((c) =>
+                        c.name
+                          .toLowerCase()
+                          .includes((clientSearch || "").toLowerCase()),
+                      ).length === 0 && (
+                        <li className="px-3 py-2 text-sm text-slate-400 italic">
+                          No clients found
+                        </li>
+                      )}
+                    </ul>
+                  )}
+                  {form.clientName && (
+                    <p className="text-xs text-green-600 mt-1">
+                      Selected: {form.clientName}
+                    </p>
+                  )}
                 </div>
 
                 {/* Broker - super admin and admin */}
@@ -250,22 +307,88 @@ export default function InvoicePage() {
                     <label className="block text-xs font-medium text-slate-600 mb-1">
                       Broker
                     </label>
-                    <select
-                      name="brokerId"
-                      value={form.brokerId}
-                      onChange={handleFormChange}
-                      disabled={brokersLoading}
-                      className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
-                    >
-                      <option value="">
-                        {brokersLoading ? "Loading..." : "— None —"}
-                      </option>
-                      {brokers.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.name}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={
+                          brokerSearch ||
+                          (form.brokerId
+                            ? brokers.find(
+                                (b) => b.id === parseInt(form.brokerId),
+                              )?.name || ""
+                            : "")
+                        }
+                        onChange={(e) => {
+                          setBrokerSearch(e.target.value);
+                          setForm((prev) => ({ ...prev, brokerId: "" }));
+                          setBrokerDropdownOpen(true);
+                        }}
+                        onFocus={() => setBrokerDropdownOpen(true)}
+                        onBlur={() =>
+                          setTimeout(() => setBrokerDropdownOpen(false), 150)
+                        }
+                        disabled={brokersLoading}
+                        placeholder={
+                          brokersLoading ? "Loading..." : "Search broker..."
+                        }
+                        className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50"
+                      />
+                      {brokerDropdownOpen && !brokersLoading && (
+                        <ul className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto">
+                          <li
+                            onMouseDown={() => {
+                              setForm((prev) => ({ ...prev, brokerId: "" }));
+                              setBrokerSearch("");
+                              setBrokerDropdownOpen(false);
+                            }}
+                            className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 text-slate-400 italic"
+                          >
+                            — None —
+                          </li>
+                          {brokers
+                            .filter((b) =>
+                              b.name
+                                .toLowerCase()
+                                .includes((brokerSearch || "").toLowerCase()),
+                            )
+                            .map((b) => (
+                              <li
+                                key={b.id}
+                                onMouseDown={() => {
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    brokerId: b.id,
+                                  }));
+                                  setBrokerSearch("");
+                                  setBrokerDropdownOpen(false);
+                                }}
+                                className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-50 hover:text-blue-700"
+                              >
+                                {b.name}
+                              </li>
+                            ))}
+                          {brokers.filter((b) =>
+                            b.name
+                              .toLowerCase()
+                              .includes((brokerSearch || "").toLowerCase()),
+                          ).length === 0 && (
+                            <li className="px-3 py-2 text-sm text-slate-400 italic">
+                              No brokers found
+                            </li>
+                          )}
+                        </ul>
+                      )}
+                      {form.brokerId && (
+                        <p className="text-xs text-green-600 mt-1">
+                          Selected:{" "}
+                          {
+                            brokers.find(
+                              (b) => b.id === parseInt(form.brokerId),
+                            )?.name
+                          }
+                        </p>
+                      )}
+                    </div>
                   </div>
                 )}
 
