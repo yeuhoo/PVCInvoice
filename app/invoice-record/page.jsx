@@ -352,6 +352,82 @@ export default function InvoiceRecordPage() {
     [invoices, fetchInvoices, isSuperAdmin],
   );
 
+  // CSV Export
+  const exportCSV = useCallback(() => {
+    const headers = [
+      "Invoice No",
+      "Invoice Date",
+      "Customer Name",
+      "Email",
+      "Phone",
+      "Check Date / Payroll No",
+      "No. of Employees",
+      "Rate per Employee",
+      "Premium",
+      "Claim Payment",
+      "Total Invoice",
+      "Billing Cycle",
+      "Payment Status",
+      "Remarks",
+      "Broker",
+      "Memo",
+    ];
+
+    const rows = displayed.map((inv) => {
+      const premium = parseFloat(inv.premium || 0);
+      const claimPayment = parseFloat(inv.claimPayment || 0);
+      const noOfEmployees = parseInt(inv.noOfEmployees || 0);
+      const employeeRate = parseFloat(inv.employeeRate || 7.5);
+      const totalInvoice =
+        premium - claimPayment + noOfEmployees * employeeRate;
+      const paymentLabel =
+        PAYMENT_STATUS_OPTIONS.find(
+          (p) => p.value === inv.record?.paymentStatus,
+        )?.label || "";
+      const memo =
+        inv.record?.paymentStatus === "ReceivedPayment"
+          ? "PAID - Received Payment"
+          : paymentLabel || "Pending";
+      const ref = inv.checkDate
+        ? new Date(inv.checkDate).toLocaleDateString("en-PH")
+        : inv.payrollNumber || "";
+
+      return [
+        inv.invoiceNumber || "",
+        inv.createdAt
+          ? new Date(inv.createdAt).toLocaleDateString("en-PH")
+          : "",
+        inv.client?.name || "",
+        inv.client?.email || "",
+        inv.client?.phone || "",
+        ref,
+        noOfEmployees,
+        employeeRate.toFixed(2),
+        premium.toFixed(2),
+        claimPayment.toFixed(2),
+        totalInvoice.toFixed(2),
+        inv.record?.status || "",
+        paymentLabel,
+        inv.record?.remarks || "",
+        inv.broker?.name || "",
+        memo,
+      ]
+        .map((val) => `"${String(val).replace(/"/g, '""')}"`)
+        .join(",");
+    });
+
+    const csvContent = [headers.map((h) => `"${h}"`).join(","), ...rows].join(
+      "\n",
+    );
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `invoices_${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }, [displayed]);
+
   // Optimized: Memoize formatting functions
   const fmtDate = useCallback(
     (d) => (d ? new Date(d).toLocaleDateString("en-PH") : "—"),
@@ -662,6 +738,26 @@ export default function InvoiceRecordPage() {
                 </select>
               </div>
             )}
+
+            <button
+              onClick={exportCSV}
+              className="inline-flex items-center gap-2 px-4 py-3 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-all shadow-sm"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+                />
+              </svg>
+              Export CSV
+            </button>
 
             {(filterStatus || searchQuery || dateFilter) && (
               <button
