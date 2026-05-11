@@ -9,19 +9,21 @@ datasource db {
 }
 
 model User {
-  id                    Int             @id @default(autoincrement())
+  id                    Int               @id @default(autoincrement())
   name                  String
-  email                 String          @unique
+  email                 String            @unique
   passwordHash          String
-  role                  Role            @default(ADMIN)
-  linkedBrokerId        Int?            @unique
-  linkedBroker          Broker?         @relation("UserBrokerLink", fields: [linkedBrokerId], references: [id])
-  createdAt             DateTime        @default(now())
-  updatedAt             DateTime        @updatedAt
+  role                  Role              @default(ADMIN)
+  linkedBrokerId        Int?              @unique
+  linkedBroker          Broker?           @relation("UserBrokerLink", fields: [linkedBrokerId], references: [id])
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
   invoices              Invoice[]
-  recordsCreated        InvoiceRecord[] @relation("InvoiceRecordCreatedBy")
-  recordsUpdated        InvoiceRecord[] @relation("InvoiceRecordUpdatedBy")
-  managedBrokers        Broker[]        @relation("BrokerManagedBy")
+  recordsCreated        InvoiceRecord[]   @relation("InvoiceRecordCreatedBy")
+  recordsUpdated        InvoiceRecord[]   @relation("InvoiceRecordUpdatedBy")
+  managedBrokers        Broker[]          @relation("BrokerManagedBy")
+  deductionReportsCreated DeductionReport[] @relation("DeductionReportCreatedBy")
+  deductionReportsUpdated DeductionReport[] @relation("DeductionReportUpdatedBy")
 }
 
 enum Role {
@@ -31,17 +33,18 @@ enum Role {
 }
 
 model Client {
-  id             Int       @id @default(autoincrement())
-  name           String    @unique
-  companyCode    String?
-  ownerName      String?
-  adminName      String?
-  email          String?
-  phone          String?
-  payrollCompany String?
-  deductionDay   String?
-  createdAt      DateTime  @default(now())
-  invoices       Invoice[]
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  companyCode      String?
+  ownerName        String?
+  adminName        String?
+  email            String?
+  phone            String?
+  payrollCompany   String?
+  deductionDay     String?
+  createdAt        DateTime          @default(now())
+  invoices         Invoice[]
+  deductionReports DeductionReport[]
 }
 
 model Broker {
@@ -123,4 +126,47 @@ enum PaymentStatus {
   BilledButDidntCharge
   FCACH
   CreditCard
+}
+
+enum DeductionReportStatus {
+  DRAFT
+  SUBMITTED
+}
+
+model DeductionReport {
+  id          Int                    @id @default(autoincrement())
+  clientId    Int
+  client      Client                 @relation(fields: [clientId], references: [id])
+  template    String                 // e.g. "finger-check"
+  title       String?                // optional user-friendly label
+  status      DeductionReportStatus  @default(DRAFT)
+  createdById Int
+  createdBy   User                   @relation(fields: [createdById], references: [id], name: "DeductionReportCreatedBy")
+  updatedById Int?
+  updatedBy   User?                  @relation(fields: [updatedById], references: [id], name: "DeductionReportUpdatedBy")
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  rows        DeductionReportRow[]
+
+  @@index([clientId])
+  @@index([createdById])
+  @@index([status])
+}
+
+model DeductionReportRow {
+  id             Int             @id @default(autoincrement())
+  reportId       Int
+  report         DeductionReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  rowIndex       Int
+  employeeNum    String          @default("")
+  dedCode        String          @default("")
+  startDate      String          @default("")
+  endDate        String          @default("")
+  rate           String          @default("")
+  amount         String          @default("")
+  payeeReference String          @default("")
+  goalAmount     String          @default("")
+
+  @@index([reportId])
+  @@unique([reportId, rowIndex])
 }
